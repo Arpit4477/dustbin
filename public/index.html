@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map with Dustbins</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="app.js" defer></script>
+</head>
+<body>
+    <nav>
+        <a href="/logout">Logout</a>
+    </nav>
+    <h1>Dustbin Locations</h1>
+    <div id="map" style="height: 600px;"></div>
+    <form id="dustbinForm">
+        <label for="lat">Latitude:</label>
+        <input type="text" id="lat" name="lat" required>
+        <label for="lng">Longitude:</label>
+        <input type="text" id="lng" name="lng" required>
+        <label for="locationId">Location ID:</label>
+        <input type="text" id="locationId" name="locationId" required>
+        <button type="submit">Add Dustbin</button>
+    </form>
+</body>
+</html>
