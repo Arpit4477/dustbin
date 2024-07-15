@@ -1,0 +1,48 @@
+<!-- public/sensor.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sensor Data</title>
+</head>
+<body>
+    <h1>Sensor Data</h1>
+    <table id="sensorTable">
+        <thead>
+            <tr>
+                <th>Device ID</th>
+                <th>Sensor 1</th>
+                <th>Sensor 2</th>
+                <th>Sensor 3</th>
+                <th>Sensor 4</th>
+                <th>Sensor 5</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        fetch('/api/sensor')
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('sensorTable').querySelector('tbody');
+                data.forEach(sensor => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${sensor.deviceId}</td>
+                        <td>${sensor.sensor1}</td>
+                        <td>${sensor.sensor2}</td>
+                        <td>${sensor.sensor3}</td>
+                        <td>${sensor.sensor4}</td>
+                        <td>${sensor.sensor5}</td>
+                        <td>${new Date(sensor.timestamp).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error('Error fetching sensor data:', error));
+    </script>
+</body>
+</html>
+

@@ -4,6 +4,7 @@ const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const User = require('./models/User');
+const SensorData = require('./models/SensorData');
 const Dustbin = require('./models/Dustbin');
 const passportConfig = require('./config/passportConfig');
 
@@ -71,11 +72,11 @@ app.get('/logout', (req, res, next) => {
     });
 });
 
-app.get('/register', ensureAdmin, (req, res) => {
+app.get('/register',ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/register.html');
 });
 
-app.post('/register', ensureAdmin, async (req, res) => {
+app.post('/register',ensureAdmin, async (req, res) => {
     const { username, password, role, locationIds } = req.body;
     try {
         // Convert locationIds string to an array
@@ -110,6 +111,30 @@ app.get('/api/user', (req, res) => {
         res.status(401).send('Unauthorized');
     }
 });
+
+// New endpoint for receiving sensor data
+app.post('/api/sensor-data', async (req, res) => {
+    const { deviceID, sensor1, sensor2, sensor3, sensor4, sensor5 } = req.body;
+    try {
+        const sensorData = new SensorData({ deviceID, sensor1, sensor2, sensor3, sensor4, sensor5 });
+        await sensorData.save();
+        res.status(201).json(sensorData);
+    } catch (err) {
+        res.status(400).send('Error saving sensor data');
+    }
+});
+
+// API to fetch and display sensor data
+app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
+    const sensorData = await SensorData.find();
+    res.json(sensorData);
+});
+
+// Apply ensureAuthenticated middleware to root route
+app.get('/', ensureAuthenticated, (req, res) => {
+    res.sendFile(__dirname + '/public/index.html');
+});
+
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
