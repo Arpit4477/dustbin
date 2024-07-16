@@ -72,11 +72,11 @@ app.get('/logout', (req, res, next) => {
     });
 });
 
-app.get('/register',ensureAdmin, (req, res) => {
+app.get('/register', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/register.html');
 });
 
-app.post('/register',ensureAdmin, async (req, res) => {
+app.post('/register', ensureAdmin, async (req, res) => {
     const { username, password, role, locationIds } = req.body;
     try {
         // Convert locationIds string to an array
@@ -89,6 +89,10 @@ app.post('/register',ensureAdmin, async (req, res) => {
     }
 });
 
+// Apply ensureAuthenticated to the homepage route
+app.get('/', ensureAuthenticated, (req, res) => {
+    res.sendFile(__dirname + '/public/inde.html');
+});
 
 app.get('/api/dustbins', ensureAuthenticated, async (req, res) => {
     const user = req.user;
@@ -130,12 +134,7 @@ app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
     res.json(sensorData);
 });
 
-// Apply ensureAuthenticated middleware to root route
-app.get('/', ensureAuthenticated, (req, res) => {
-    res.sendFile(__dirname + '/public/index.html');
-});
-
-
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
 });
+
