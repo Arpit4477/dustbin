@@ -8,21 +8,31 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="app.js" defer></script>
+    <style>
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <nav>
+        <a href="/">Home</a>
+        <a href="/add">Add Button</a>
         <a href="/logout">Logout</a>
     </nav>
     <h1>Dustbin Locations</h1>
     <div id="map" style="height: 600px;"></div>
-    <form id="dustbinForm">
-        <label for="lat">Latitude:</label>
-        <input type="text" id="lat" name="lat" required>
-        <label for="lng">Longitude:</label>
-        <input type="text" id="lng" name="lng" required>
-        <label for="locationId">Location ID:</label>
-        <input type="text" id="locationId" name="locationId" required>
-        <button type="submit">Add Dustbin</button>
-    </form>
 </body>
 </html>
+

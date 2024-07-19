@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 const session = require('express-session');
 const bodyParser = require('body-parser');
+const path = require('path');
 const User = require('./models/User');
 const SensorData = require('./models/SensorData');
 const Dustbin = require('./models/Dustbin');
@@ -13,7 +14,11 @@ const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(express.static('public'));
+
+
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
 
 // Express session
 app.use(session({
@@ -79,8 +84,7 @@ app.get('/register', ensureAdmin, (req, res) => {
 app.post('/register', ensureAdmin, async (req, res) => {
     const { username, password, role, locationIds } = req.body;
     try {
-        // Convert locationIds string to an array
-        const locationIdsArray = locationIds.split(',').map(id => id.trim());
+        const locationIdsArray = Array.isArray(locationIds) ? locationIds : [locationIds];
         const newUser = new User({ username, password, role, locationIds: locationIdsArray });
         await newUser.save();
         res.status(201).send('User registered');
@@ -91,7 +95,12 @@ app.post('/register', ensureAdmin, async (req, res) => {
 
 // Apply ensureAuthenticated to the homepage route
 app.get('/', ensureAuthenticated, (req, res) => {
-    res.sendFile(__dirname + '/public/inde.html');
+    res.render('index', { user: req.user });
+});
+
+// Route to serve the add button page
+app.get('/add', ensureAdmin, (req, res) => {
+    res.sendFile(__dirname + '/public/add.html'); // You need to create add.html
 });
 
 app.get('/api/dustbins', ensureAuthenticated, async (req, res) => {
@@ -128,11 +137,47 @@ app.post('/api/sensor-data', async (req, res) => {
     }
 });
 
+// Route to get all users (admin only)
+app.get('/api/users', ensureAdmin, async (req, res) => {
+    try {
+        const users = await User.find();
+        res.json(users);
+    } catch (err) {
+        res.status(500).send('Error fetching users');
+    }
+});
+
+// Route to update user location IDs (admin only)
+app.put('/api/users/:id', ensureAdmin, async (req, res) => {
+    const { id } = req.params;
+    const { locationIds } = req.body;
+
+    try {
+        const user = await User.findById(id);
+        if (!user) {
+            return res.status(404).send('User not found');
+        }
+
+        user.locationIds = Array.isArray(locationIds) ? locationIds : [locationIds];
+        await user.save();
+        res.send('User updated successfully');
+    } catch (err) {
+        res.status(400).send('Error updating user');
+    }
+});
+
+// Route to serve the admin page
+app.get('/admin', ensureAdmin, (req, res) => {
+    res.sendFile(__dirname + '/public/admin.html');
+});
+
 // API to fetch and display sensor data
 app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
     const sensorData = await SensorData.find();
     res.json(sensorData);
 });
+
+app.use(express.static('public'));
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}/`);
