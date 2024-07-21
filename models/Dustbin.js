@@ -1,20 +1,25 @@
-// models/Dustbin.js
 const mongoose = require('mongoose');
 
-const DustbinSchema = new mongoose.Schema({
+const dustbinSchema = new mongoose.Schema({
     lat: {
         type: Number,
-        required: true
+        required: true,
     },
     lng: {
         type: Number,
-        required: true
+        required: true,
     },
     locationId: {
         type: String,
-        required: true
-    }
+        required: true,
+    },
+    deviceId: {
+        type: String,
+        required: true,
+    },
 });
 
-module.exports = mongoose.model('Dustbin', DustbinSchema);
+const Dustbin = mongoose.model('Dustbin', dustbinSchema);
+
+module.exports = Dustbin;
 

@@ -110,10 +110,14 @@ app.get('/api/dustbins', ensureAuthenticated, async (req, res) => {
 });
 
 app.post('/api/dustbins', ensureAdmin, async (req, res) => {
-    const { lat, lng, locationId } = req.body;
-    const dustbin = new Dustbin({ lat, lng, locationId });
-    await dustbin.save();
-    res.status(201).json(dustbin);
+    const { lat, lng, locationId, deviceId } = req.body;
+    const dustbin = new Dustbin({ lat, lng, locationId, deviceId });
+    try {
+        await dustbin.save();
+        res.status(201).json(dustbin);
+    } catch (err) {
+        res.status(400).send('Error saving dustbin');
+    }
 });
 
 // Route to get the current user
@@ -176,6 +180,28 @@ app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
     const sensorData = await SensorData.find();
     res.json(sensorData);
 });
+
+
+// New endpoint to get the latest sensor data for each dustbin
+app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
+    try {
+        const dustbins = await Dustbin.find();
+        const statusPromises = dustbins.map(async dustbin => {
+            const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
+            if (latestSensorData) {
+                const isFilled = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5].some(sensor => sensor > 10);
+                return { ...dustbin.toObject(), status: isFilled ? 'filled' : 'empty' };
+            } else {
+                return { ...dustbin.toObject(), status: 'unknown' };
+            }
+        });
+        const statuses = await Promise.all(statusPromises);
+        res.json(statuses);
+    } catch (err) {
+        res.status(500).send('Error fetching dustbin statuses');
+    }
+});
+
 
 app.use(express.static('public'));
 
