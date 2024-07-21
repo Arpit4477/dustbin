@@ -30,6 +30,7 @@
         <a href="/">Home</a>
         <% if (user.role === 'admin') { %>
             <a href="/add">Add Dustbin</a>
+            <a href="/register">Add User</a> <!-- Link to add a new user -->
         <% } %>
         <a href="/logout">Logout</a>
     </nav>
@@ -37,4 +38,3 @@
     <div id="map" style="height: 600px;"></div>
 </body>
 </html>
-
