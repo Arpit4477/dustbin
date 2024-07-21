@@ -2,16 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register</title>
     <style>
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding-top: 50px; /* Adjust for fixed navbar */
+        }
+
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+        }
+
+        nav a:hover {
+            text-decoration: underline;
         }
 
         form {
@@ -20,6 +39,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
+            margin: 0 auto;
         }
 
         form label {
@@ -68,6 +88,16 @@
     </style>
 </head>
 <body>
+    <nav>
+        <a href="/">Home</a>
+        <% if (user && user.role === 'admin') { %>
+            <a href="/add">Add Dustbin</a>
+            <a href="/register">Add User</a> <!-- Link to add a new user -->
+            <a href="/admin">Admin</a> <!-- Link to admin page -->
+        <% } %>
+        <a href="/logout">Logout</a>
+    </nav>
+    
     <form action="/register" method="post">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
