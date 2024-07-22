@@ -18,6 +18,25 @@ const emptyIcon = L.icon({
 });
 
 
+
+// Fetch dustbin locations from the server and add to the map
+fetch('/api/dustbins')
+    .then(response => response.json())
+    .then(data => {
+        if (data.length > 0) {
+            const bounds = [];
+            data.forEach(dustbin => {
+                const marker = L.marker([dustbin.lat, dustbin.lng], { icon: filledIcon }).addTo(map)
+                    .bindPopup('Dustbin at Location ID: ' + dustbin.locationId);
+                bounds.push(marker.getLatLng());
+            });
+            map.fitBounds(bounds);  // Adjust the map view to fit all markers
+        } else {
+            // Default view if no dustbins are available
+            map.setView([51.505, -0.09], 13); // Adjust to the desired default location
+        }
+    });
+
 // Fetch dustbin statuses from the server and add to the map
 fetch('/api/dustbin-status')
     .then(response => response.json())
@@ -37,24 +56,6 @@ fetch('/api/dustbin-status')
         }
     });
 
-
-// Fetch dustbin locations from the server and add to the map
-fetch('/api/dustbins')
-    .then(response => response.json())
-    .then(data => {
-        if (data.length > 0) {
-            const bounds = [];
-            data.forEach(dustbin => {
-                const marker = L.marker([dustbin.lat, dustbin.lng], { icon: filledIcon }).addTo(map)
-                    .bindPopup('Dustbin at Location ID: ' + dustbin.locationId);
-                bounds.push(marker.getLatLng());
-            });
-            map.fitBounds(bounds);  // Adjust the map view to fit all markers
-        } else {
-            // Default view if no dustbins are available
-            map.setView([51.505, -0.09], 13); // Adjust to the desired default location
-        }
-    });
 
 // Handle form submission
 const form = document.getElementById('dustbinForm');
