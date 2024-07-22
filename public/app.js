@@ -6,13 +6,13 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 
 // Define icons for filled and empty dustbins
 const filledIcon = L.icon({
-    iconUrl: 'dot.png',
+    iconUrl: 'dustbinFull.png',
     iconSize: [20, 20],
     iconAnchor: [5, 5],
 });
 
 const emptyIcon = L.icon({
-    iconUrl: 'dustbin.png',
+    iconUrl: 'dustbinEmpty.png',
     iconSize: [20, 20],
     iconAnchor: [5, 5],
 });
