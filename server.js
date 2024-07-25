@@ -189,10 +189,18 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
         const statusPromises = dustbins.map(async dustbin => {
             const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
             if (latestSensorData) {
-                const isFilled = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5].some(sensor => sensor > 10);
-                return { ...dustbin.toObject(), status: isFilled ? 'filled' : 'empty' };
+                let fillLevel = '25%';
+                const sensors = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5];
+                if (sensors.some(sensor => sensor > 20)) {
+                    fillLevel = '100%';
+                } else if (sensors.some(sensor => sensor > 15)) {
+                    fillLevel = '75%';
+                } else if (sensors.some(sensor => sensor > 10)) {
+                    fillLevel = '50%';
+                }
+                return { ...dustbin.toObject(), fillLevel };
             } else {
-                return { ...dustbin.toObject(), status: 'unknown' };
+                return { ...dustbin.toObject(), fillLevel: 'unknown' };
             }
         });
         const statuses = await Promise.all(statusPromises);
@@ -201,6 +209,7 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
         res.status(500).send('Error fetching dustbin statuses');
     }
 });
+
 
 
 app.use(express.static('public'));
