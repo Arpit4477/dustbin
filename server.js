@@ -215,7 +215,7 @@ app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
 // New endpoint to get the latest sensor data for each dustbin
 app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
     try {
-        const dustbins = await Dustbin.find();
+        const dustbins = await Dustbin.find({ locationId: { $in: user.locationIds } });
         const statusPromises = dustbins.map(async dustbin => {
             const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
             if (latestSensorData) {
