@@ -4,18 +4,28 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
-// Define icons for filled and empty dustbins
-const filledIcon = L.icon({
-    iconUrl: 'dustbinFull.png',
-    iconSize: [20, 20],
-    iconAnchor: [5, 5],
-});
+// Define DivIcons for different fill levels
+const createIcon = (iconUrl, labelText) => {
+    return L.divIcon({
+        html: `
+            <div style="position: relative; text-align: center; color: black;">
+                <div style="font-size: 12px; font-weight: bold;">${labelText}</div>
+                <img src="${iconUrl}" style="width: 20px; height: 20px;">
+            </div>
+        `,
+        iconSize: [20, 20],
+        iconAnchor: [10, 10],
+        className: '' // To remove the default className
+    });
+};
 
-const emptyIcon = L.icon({
-    iconUrl: 'dustbinEmpty.png',
-    iconSize: [20, 20],
-    iconAnchor: [5, 5],
-});
+const icons = {
+    '100%': createIcon('dustbinFull.png', '100%'),
+    '75%': createIcon('dustbinFull.png', '75%'),
+    '50%': createIcon('dustbinEmpty.png', '50%'),
+    '25%': createIcon('dustbinEmpty.png', '25%')
+};
+
 
 
 
@@ -44,9 +54,9 @@ fetch('/api/dustbin-status')
         if (data.length > 0) {
             const bounds = [];
             data.forEach(dustbin => {
-                const icon = dustbin.status === 'filled' ? filledIcon : emptyIcon;
+                const icon = icons[dustbin.fillLevel] || icons['25%']; // Default to 25% if unknown
                 const marker = L.marker([dustbin.lat, dustbin.lng], { icon }).addTo(map)
-                    .bindPopup(`Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}, Status: ${dustbin.status}`);
+                    .bindPopup(`Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}, Status: ${dustbin.fillLevel}`);
                 bounds.push(marker.getLatLng());
             });
             map.fitBounds(bounds);  // Adjust the map view to fit all markers
@@ -54,7 +64,9 @@ fetch('/api/dustbin-status')
             // Default view if no dustbins are available
             map.setView([51.505, -0.09], 13); // Adjust to the desired default location
         }
-    });
+    })
+    .catch(error => console.error('Error:', error));
+
 
 
 // Handle form submission
@@ -79,7 +91,7 @@ form.addEventListener('submit', function (e) {
     .then(response => response.json())
     .then(data => {
         // Add the new dustbin to the map
-        const marker = L.marker([data.lat, data.lng], { icon: redIcon }).addTo(map)
+        const marker = L.marker([data.lat, data.lng], { icon: icons['25%'] }).addTo(map)
             .bindPopup(`Dustbin at Location ID: ${data.locationId}, Device ID: ${data.deviceId}`);
 
         // Clear the form
@@ -87,7 +99,6 @@ form.addEventListener('submit', function (e) {
     })
     .catch(error => console.error('Error:', error));
 });
-
 
 // Function to handle map click event
 function onMapClick(e) {
