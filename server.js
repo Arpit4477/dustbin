@@ -214,33 +214,24 @@ app.get('/api/sensor', ensureAuthenticated, async (req, res) => {
 
 // New endpoint to get the latest sensor data for each dustbin
 app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
-    const user = req.user;
     try {
-        const dustbins = await Dustbin.find({ locationId: { $in: user.locationIds } });
+        const dustbins = await Dustbin.find({ locationId: { $in: req.user.locationIds } });
         const statusPromises = dustbins.map(async dustbin => {
             const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
             if (latestSensorData) {
-                const sensorValues = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5];
-                const maxSensorValue = Math.max(...sensorValues);
-                let status = '25%';
-                if (maxSensorValue > 20) {
-                    status = '100%';
-                } else if (maxSensorValue > 15) {
-                    status = '75%';
-                } else if (maxSensorValue > 10) {
-                    status = '50%';
-                }
-                return { ...dustbin.toObject(), status };
+                const sensors = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5];
+                const maxSensorValue = Math.max(...sensors);
+                const fillLevel = maxSensorValue > 20 ? '100%' : maxSensorValue > 15 ? '75%' : maxSensorValue > 10 ? '50%' : '25%';
+                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2, sensor3: latestSensorData.sensor3, sensor4: latestSensorData.sensor4, sensor5: latestSensorData.sensor5 };
             } else {
-                return { ...dustbin.toObject(), status: 'unknown' };
+                return { ...dustbin.toObject(), fillLevel: '25%', sensor1: 0, sensor2: 0, sensor3: 0, sensor4: 0, sensor5: 0 };
             }
         });
         const statuses = await Promise.all(statusPromises);
         res.json(statuses);
     } catch (err) {
-        res.status(500).send('Error fetching dustbin statuses');
-    }
-});
+        res.status(500).send
+
 
 
 
