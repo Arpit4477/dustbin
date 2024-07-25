@@ -7,6 +7,7 @@ const path = require('path');
 const User = require('./models/User');
 const SensorData = require('./models/SensorData');
 const Dustbin = require('./models/Dustbin');
+const Location = require('./models/Location');
 const passportConfig = require('./config/passportConfig');
 
 const app = express();
@@ -128,6 +129,35 @@ app.get('/api/user', (req, res) => {
         res.status(401).send('Unauthorized');
     }
 });
+
+
+// Route to serve the add location page
+app.get('/addLocation', ensureAdmin, (req, res) => {
+    res.sendFile(__dirname + '/public/addLocation.html');
+});
+
+// Route to handle adding location
+app.post('/addLocation', ensureAdmin, async (req, res) => {
+    const { locationId } = req.body;
+    try {
+        const newLocation = new Location({ locationId });
+        await newLocation.save();
+        res.status(201).send('Location ID added');
+    } catch (err) {
+        res.status(400).send('Error adding location ID');
+    }
+});
+
+// Route to get all locations (for dynamically populating location IDs in register form)
+app.get('/api/locations', ensureAuthenticated, async (req, res) => {
+    try {
+        const locations = await Location.find();
+        res.json(locations);
+    } catch (err) {
+        res.status(500).send('Error fetching locations');
+    }
+});
+
 
 // New endpoint for receiving sensor data
 app.post('/api/sensor-data', async (req, res) => {
