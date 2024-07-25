@@ -26,48 +26,67 @@ const icons = {
     '25%': createIcon('dustbinEmpty.png', '25%')
 };
 
+const dustbins = [];
 
+const fetchDustbins = () => {
+    fetch('/api/dustbin-status')
+        .then(response => response.json())
+        .then(data => {
+            dustbins.length = 0;
+            data.forEach(dustbin => dustbins.push(dustbin));
+            applyFilters();
+        })
+        .catch(error => console.error('Error:', error));
+};
 
+const applyFilters = () => {
+    const locationFilter = document.getElementById('locationFilter').value;
+    const fillLevelFilter = document.getElementById('fillLevelFilter').value;
 
-// Fetch dustbin locations from the server and add to the map
-fetch('/api/dustbins')
-    .then(response => response.json())
-    .then(data => {
-        if (data.length > 0) {
-            const bounds = [];
-            data.forEach(dustbin => {
-                const marker = L.marker([dustbin.lat, dustbin.lng], { icon: filledIcon }).addTo(map)
-                    .bindPopup('Dustbin at Location ID: ' + dustbin.locationId);
-                bounds.push(marker.getLatLng());
-            });
-            map.fitBounds(bounds);  // Adjust the map view to fit all markers
-        } else {
-            // Default view if no dustbins are available
-            map.setView([51.505, -0.09], 13); // Adjust to the desired default location
+    map.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+            map.removeLayer(layer);
         }
     });
 
-// Fetch dustbin statuses from the server and add to the map
-fetch('/api/dustbin-status')
-    .then(response => response.json())
-    .then(data => {
-        if (data.length > 0) {
-            const bounds = [];
-            data.forEach(dustbin => {
-                const icon = icons[dustbin.fillLevel] || icons['25%']; // Default to 25% if unknown
-                const marker = L.marker([dustbin.lat, dustbin.lng], { icon }).addTo(map)
-                    .bindPopup(`Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}, Status: ${dustbin.fillLevel}`);
-                bounds.push(marker.getLatLng());
-            });
-            map.fitBounds(bounds);  // Adjust the map view to fit all markers
-        } else {
-            // Default view if no dustbins are available
-            map.setView([51.505, -0.09], 13); // Adjust to the desired default location
+    const bounds = [];
+
+    dustbins.forEach(dustbin => {
+        const fillLevel = getFillLevel(dustbin);
+        if ((locationFilter === '' || dustbin.locationId === locationFilter) &&
+            (fillLevelFilter === '' || fillLevel === fillLevelFilter)) {
+            const icon = icons[fillLevel] || icons['25%']; // Default to 25% if unknown
+            const marker = L.marker([dustbin.lat, dustbin.lng], { icon })
+                .addTo(map)
+                .bindPopup(`Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}, Status: ${fillLevel}`);
+            bounds.push(marker.getLatLng());
         }
-    })
-    .catch(error => console.error('Error:', error));
+    });
 
+    if (bounds.length > 0) {
+        map.fitBounds(bounds);
+    } else {
+        map.setView([51.505, -0.09], 13);
+    }
+};
 
+const getFillLevel = (dustbin) => {
+    const sensorValues = [dustbin.sensor1, dustbin.sensor2, dustbin.sensor3, dustbin.sensor4, dustbin.sensor5];
+    const maxSensorValue = Math.max(...sensorValues);
+    if (maxSensorValue > 20) {
+        return '100%';
+    } else if (maxSensorValue > 15) {
+        return '75%';
+    } else if (maxSensorValue > 10) {
+        return '50%';
+    } else {
+        return '25%';
+    }
+};
+
+document.getElementById('applyFilters').addEventListener('click', applyFilters);
+
+fetchDustbins();
 
 // Handle form submission
 const form = document.getElementById('dustbinForm');
