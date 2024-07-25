@@ -108,13 +108,25 @@
         
         <label for="locationIds">Location IDs:</label>
         <select id="locationIds" name="locationIds" multiple required>
-            <option value="IIT Jodhpur">IIT Jodhpur</option>
-            <option value="Jodhpur">Jodhpur</option>
-            <option value="Kangra">Kangra</option>
-            <!-- Add more options as needed -->
+            <!-- Options will be populated dynamically using JavaScript -->
         </select>
         
         <button type="submit">Register</button>
     </form>
+    <script>
+        // Fetch locations and populate the locationIds select
+        fetch('/api/locations')
+            .then(response => response.json())
+            .then(locations => {
+                const locationIdsSelect = document.getElementById('locationIds');
+                locations.forEach(location => {
+                    const option = document.createElement('option');
+                    option.value = location.locationId;
+                    option.textContent = location.locationId;
+                    locationIdsSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching locations:', error));
+    </script>
 </body>
 </html>
