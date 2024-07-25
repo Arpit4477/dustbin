@@ -230,7 +230,9 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
         const statuses = await Promise.all(statusPromises);
         res.json(statuses);
     } catch (err) {
-        res.status(500).send
+        res.status(500).send('Error fetching dustbin statuses');
+    }
+});
 
 
 
