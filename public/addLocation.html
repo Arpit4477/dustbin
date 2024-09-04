@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Add Location</title>
+    <link rel="stylesheet" href="header.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -54,10 +55,12 @@
     </style>
 </head>
 <body>
+    <div id="header-placeholder"></div>
     <form action="/addLocation" method="post">
         <label for="locationId">Location ID:</label>
         <input type="text" id="locationId" name="locationId" required>
         <button type="submit">Add Location</button>
     </form>
+    <script src="loadheader.js"></script>
 </body>
 </html>
