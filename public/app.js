@@ -4,6 +4,14 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
 
+// Add event listener for map clicks
+map.on('click', onMapClick);
+
+// Function to handle map click event
+function onMapClick(e) {
+    alert("You clicked the map at " + e.latlng);
+}
+
 // Define DivIcons for different fill levels
 const createIcon = (iconUrl, labelText) => {
     return L.divIcon({
@@ -119,10 +127,3 @@ form.addEventListener('submit', function (e) {
     .catch(error => console.error('Error:', error));
 });
 
-// Function to handle map click event
-function onMapClick(e) {
-    alert("You clicked the map at " + e.latlng);
-}
-
-// Add event listener for map clicks
-map.on('click', onMapClick);
