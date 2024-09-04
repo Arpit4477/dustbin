@@ -11,7 +11,36 @@
     <script src="app.js" defer></script>
 <style>
         
+.form-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
 
+        .form-container label {
+            margin-right: 5px;
+        }
+
+        .form-container input {
+            width: 100px;
+            padding: 5px;
+        }
+
+        button[type="submit"] {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a049;
+        }
 
     </style>
 </head>
