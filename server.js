@@ -7,7 +7,7 @@ const path = require('path');
 const User = require('./models/User');
 const SensorData = require('./models/SensorData');
 const Dustbin = require('./models/Dustbin');
-const Location = require('./models/Location');
+const Location = require('./models/Site');
 const passportConfig = require('./config/passportConfig');
 
 const app = express();
