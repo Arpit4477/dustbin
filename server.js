@@ -133,6 +133,7 @@ app.get('/api/user', (req, res) => {
 
 // Route to serve the add location page
 app.get('/addSite', ensureAdmin, (req, res) => {
+    console.log("Reached /addSite route");
     res.sendFile(__dirname + '/public/addSite.html');
 });
 
