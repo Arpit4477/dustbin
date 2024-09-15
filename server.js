@@ -132,12 +132,12 @@ app.get('/api/user', (req, res) => {
 
 
 // Route to serve the add location page
-app.get('/addLocation', ensureAdmin, (req, res) => {
-    res.sendFile(__dirname + '/public/addLocation.html');
+app.get('/addSite', ensureAdmin, (req, res) => {
+    res.sendFile(__dirname + '/public/addSite.html');
 });
 
 // Route to handle adding location
-app.post('/addLocation', ensureAdmin, async (req, res) => {
+app.post('/addSite', ensureAdmin, async (req, res) => {
     const { locationId } = req.body;
     try {
         const newLocation = new Location({ locationId });
@@ -149,7 +149,7 @@ app.post('/addLocation', ensureAdmin, async (req, res) => {
 });
 
 // Route to get all locations (for dynamically populating location IDs in register form)
-app.get('/api/locations', ensureAuthenticated, async (req, res) => {
+app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
     try {
         const locations = await Location.find();
         res.json(locations);
