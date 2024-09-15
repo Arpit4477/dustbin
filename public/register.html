@@ -84,7 +84,7 @@
             <option value="user">User</option>
         </select>
         
-        <label for="locationIds">Location IDs:</label>
+        <label for="locationIds">Site IDs:</label>
         <select id="locationIds" name="locationIds" multiple required>
             <!-- Options will be populated dynamically using JavaScript -->
         </select>
@@ -93,7 +93,7 @@
     </form>
     <script>
         // Fetch locations and populate the locationIds select
-        fetch('/api/locations')
+        fetch('/api/Sites')
             .then(response => response.json())
             .then(locations => {
                 const locationIdsSelect = document.getElementById('locationIds');
