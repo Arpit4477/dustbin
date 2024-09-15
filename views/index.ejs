@@ -137,15 +137,15 @@ body {
             <a href="/add">Add Dustbin</a>
             <a href="/register">Add User</a> <!-- Link to add a new user -->
             <a href="/admin">Admin</a> <!-- Link to admin page -->
-            <a href="/addLocation">Add Site</a>
+            <a href="/addSite">Add Site</a>
         <% } %>
         <a href="/logout">Logout</a>
     </nav>
-    <h1>Dustbin Locations</h1>
+    <h1>Dustbin Sites</h1>
     <div class="filter-container">
-        <label for="locationFilter">Filter by Location:</label>
+        <label for="locationFilter">Filter by Site:</label>
         <select id="locationFilter">
-            <option value="">All Locations</option>
+            <option value="">All Sites</option>
             <% user.locationIds.forEach(locationId => { %>
                 <option value="<%= locationId %>"><%= locationId %></option>
             <% }); %>
