@@ -92,7 +92,6 @@ const getFillLevel = (dustbin) => {
     }
 };
 
-document.getElementById('applyFilters').addEventListener('click', applyFilters);
 
 fetchDustbins();
 
@@ -135,4 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.getElementById('applyFilters').addEventListener('click', applyFilters);
 
