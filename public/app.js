@@ -97,33 +97,42 @@ document.getElementById('applyFilters').addEventListener('click', applyFilters);
 fetchDustbins();
 
 // Handle form submission
-const form = document.getElementById('dustbinForm');
-form.addEventListener('submit', function (e) {
-    e.preventDefault();
+document.addEventListener('DOMContentLoaded', function() {
+    const dustbinForm = document.getElementById('dustbinForm');
 
-    const lat = parseFloat(document.getElementById('lat').value);
-    const lng = parseFloat(document.getElementById('lng').value);
-    const locationId = document.getElementById('locationId').value;
-    const deviceId = document.getElementById('deviceId').value;
+    dustbinForm.addEventListener('submit', async function(e) {
+        e.preventDefault(); // Prevent form from reloading the page
 
-    const dustbin = { lat, lng, locationId, deviceId };
+        // Get form values
+        const lat = document.getElementById('lat').value;
+        const lng = document.getElementById('lng').value;
+        const locationId = document.getElementById('locationId').value;
+        const deviceId = document.getElementById('deviceId').value;
 
-    fetch('/api/dustbins', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dustbin)
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Add the new dustbin to the map
-        const marker = L.marker([data.lat, data.lng], { icon: icons['25%'] }).addTo(map)
-            .bindPopup(`Dustbin at Location ID: ${data.locationId}, Device ID: ${data.deviceId}`);
+        // Create a dustbin object to send to the server
+        const dustbinData = { lat, lng, locationId, deviceId };
 
-        // Clear the form
-        form.reset();
-    })
-    .catch(error => console.error('Error:', error));
+        try {
+            // Send POST request to the server
+            const response = await fetch('/api/dustbins', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(dustbinData),
+            });
+
+            // Check if the response is successful
+            if (response.ok) {
+                alert('Dustbin added successfully!');
+                dustbinForm.reset(); // Reset form fields after successful submission
+            } else {
+                alert('Error adding dustbin.');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Error adding dustbin.');
+        }
+    });
 });
 
