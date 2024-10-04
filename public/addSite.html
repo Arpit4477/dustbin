@@ -52,15 +52,71 @@
         form button:hover {
             background-color: #4cae4c;
         }
+
+        /* Message styling */
+        #message {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        #message.success {
+            color: green;
+        }
+
+        #message.error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <div id="header-placeholder"></div>
-    <form action="/addSite" method="post">
+    <form id="addSiteForm">
         <label for="locationId">Site ID:</label>
         <input type="text" id="locationId" name="locationId" required>
         <button type="submit">Add Site</button>
     </form>
+    
+    <div id="message"></div>
+
     <script src="loadheader.js"></script>
+    <script>
+        // Prevent the default form submission and handle via AJAX
+        document.getElementById('addSiteForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent page refresh
+            
+            const locationId = document.getElementById('locationId').value;
+            const messageElement = document.getElementById('message');
+
+            try {
+                // Make the POST request using Fetch API
+                const response = await fetch('/addSite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ locationId: locationId }),
+                });
+
+                // Handle the response
+                const result = await response.text();
+                
+                if (response.ok) {
+                    // Success
+                    messageElement.textContent = 'Location added successfully!';
+                    messageElement.className = 'success';
+                    document.getElementById('locationId').value = ''; // Clear the input
+                } else {
+                    // Failure
+                    messageElement.textContent = 'Failed to add location: ' + result;
+                    messageElement.className = 'error';
+                }
+            } catch (error) {
+                // Error during the fetch request
+                messageElement.textContent = 'An error occurred: ' + error.message;
+                messageElement.className = 'error';
+            }
+        });
+    </script>
 </body>
 </html>
