@@ -177,9 +177,9 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
 
 // New endpoint for receiving sensor data
 app.post('/api/sensor-data', async (req, res) => {
-    const { deviceID, sensor1, sensor2, sensor3, sensor4, sensor5 } = req.body;
+    const { deviceID, sensor1, sensor2, battery, voltage } = req.body;
     try {
-        const sensorData = new SensorData({ deviceID, sensor1, sensor2, sensor3, sensor4, sensor5 });
+        const sensorData = new SensorData({ deviceID, sensor1, sensor2, battery, voltage });
         await sensorData.save();
         res.status(201).json(sensorData);
     } catch (err) {
