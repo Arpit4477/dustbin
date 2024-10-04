@@ -107,8 +107,12 @@
                     messageElement.className = 'success';
                     document.getElementById('locationId').value = ''; // Clear the input
                 } else {
-                    // Failure
-                    messageElement.textContent = 'Failed to add location: ' + result;
+                    // Check if the location already exists
+                    if (result === 'Site already exists') {
+                        messageElement.textContent = 'Failed to add location: Site already exists!';
+                    } else {
+                        messageElement.textContent = 'Failed to add location: ' + result;
+                    }
                     messageElement.className = 'error';
                 }
             } catch (error) {
