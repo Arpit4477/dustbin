@@ -13,8 +13,6 @@
             padding-top: 50px; /* Adjust for fixed navbar */
         }
 
-        
-
         form {
             background-color: #fff;
             padding: 20px;
@@ -66,12 +64,26 @@
         a:hover {
             text-decoration: underline;
         }
+
+        #message {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        #message.success {
+            color: green;
+        }
+
+        #message.error {
+            color: red;
+        }
     </style>
 </head>
 <body>
     <div id="header-placeholder"></div>
     
-    <form action="/register" method="post">
+    <form id="registerForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
         
@@ -91,6 +103,9 @@
         
         <button type="submit">Register</button>
     </form>
+    
+    <div id="message"></div>
+
     <script>
         // Fetch locations and populate the locationIds select
         fetch('/api/Sites')
@@ -105,7 +120,51 @@
                 });
             })
             .catch(error => console.error('Error fetching locations:', error));
+
+        // Handle form submission with AJAX
+        document.getElementById('registerForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent page refresh
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const role = document.getElementById('role').value;
+            const locationIds = Array.from(document.getElementById('locationIds').selectedOptions).map(option => option.value);
+            const messageElement = document.getElementById('message');
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        username: username, 
+                        password: password, 
+                        role: role, 
+                        locationIds: locationIds 
+                    }),
+                });
+
+                const result = await response.text();
+
+                if (response.ok) {
+                    // Success
+                    messageElement.textContent = 'Registration successful!';
+                    messageElement.className = 'success';
+                    document.getElementById('registerForm').reset(); // Clear the form
+                } else {
+                    // Failure
+                    messageElement.textContent = 'Registration failed: ' + result;
+                    messageElement.className = 'error';
+                }
+            } catch (error) {
+                // Handle error
+                messageElement.textContent = 'An error occurred: ' + error.message;
+                messageElement.className = 'error';
+            }
+        });
     </script>
+    
     <script src="loadheader.js"></script>
 </body>
 </html>
