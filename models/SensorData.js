@@ -8,9 +8,8 @@ const SensorDataSchema = new mongoose.Schema({
     },
     sensor1: Number,
     sensor2: Number,
-    sensor3: Number,
-    sensor4: Number,
-    sensor5: Number,
+    battery: Number,
+    voltage: Number,
     createdAt: {
         type: Date,
         default: Date.now
