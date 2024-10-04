@@ -143,6 +143,11 @@ app.post('/addSite', ensureAdmin, async (req, res) => {
     try {
         const newLocation = new Location({ locationId });
         await newLocation.save();
+        // Find all admin users and update their locationIds to include the new location
+        await User.updateMany(
+            { role: 'admin' }, // Find all users with role 'admin'
+            { $addToSet: { locationIds: locationId } } // Add the new locationId to the locationIds array without duplicates
+        );
         res.status(201).send('Location ID added');
     } catch (err) {
         res.status(400).send('Error adding location ID');
