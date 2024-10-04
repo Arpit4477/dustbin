@@ -85,7 +85,17 @@ app.get('/register', ensureAdmin, (req, res) => {
 app.post('/register', ensureAdmin, async (req, res) => {
     const { username, password, role, locationIds } = req.body;
     try {
-        const locationIdsArray = Array.isArray(locationIds) ? locationIds : [locationIds];
+        let locationIdsArray = [];
+
+        // If the user is an admin, assign all locations
+        if (role === 'admin') {
+            const locations = await Location.find(); // Fetch all locations
+            locationIdsArray = locations.map(location => location.locationId); // Extract locationId for all locations
+        } else {
+            locationIdsArray = Array.isArray(locationIds) ? locationIds : [locationIds]; // Use provided locationIds for non-admins
+        }
+
+        // Create the new user
         const newUser = new User({ username, password, role, locationIds: locationIdsArray });
         await newUser.save();
         res.status(201).send('User registered');
