@@ -151,18 +151,28 @@ app.get('/addSite', ensureAdmin, (req, res) => {
 app.post('/addSite', ensureAdmin, async (req, res) => {
     const { locationId } = req.body;
     try {
+        // Check if the location already exists
+        const existingLocation = await Location.findOne({ locationId });
+        if (existingLocation) {
+            return res.status(400).send('Site already exists');
+        }
+
+        // If it doesn't exist, create a new location
         const newLocation = new Location({ locationId });
         await newLocation.save();
-        // Find all admin users and update their locationIds to include the new location
+
+        // Update all admin users to include the new location in their locationIds
         await User.updateMany(
-            { role: 'admin' }, // Find all users with role 'admin'
-            { $addToSet: { locationIds: locationId } } // Add the new locationId to the locationIds array without duplicates
+            { role: 'admin' }, // Find all admin users
+            { $addToSet: { locationIds: locationId } } // Add new location to their locationIds array
         );
-        res.status(201).send('Location ID added');
+
+        res.status(201).send('Location ID added successfully');
     } catch (err) {
         res.status(400).send('Error adding location ID');
     }
 });
+
 
 // Route to get all locations (for dynamically populating location IDs in register form)
 app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
