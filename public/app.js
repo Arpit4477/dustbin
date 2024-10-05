@@ -79,7 +79,7 @@ const applyFilters = () => {
 };
 
 const getFillLevel = (dustbin) => {
-    const sensorValues = [dustbin.sensor1, dustbin.sensor2, dustbin.battery, dustbin.voltage];
+    const sensorValues = [dustbin.sensor1, dustbin.sensor2];
     const maxSensorValue = Math.max(...sensorValues);
     if (maxSensorValue > 20) {
         return '100%';
