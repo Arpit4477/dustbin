@@ -248,7 +248,7 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
                 const sensors = [latestSensorData.sensor1, latestSensorData.sensor2];
                 const maxSensorValue = Math.max(...sensors);
                 const fillLevel = maxSensorValue > 20 ? '100%' : maxSensorValue > 15 ? '75%' : maxSensorValue > 10 ? '50%' : '25%';
-                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2, battery: latestSensorData.battery, voltage: latestSensorData.voltage };
+                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2, sensor3: latestSensorData.battery, voltage: latestSensorData.voltage };
             } else {
                 return { ...dustbin.toObject(), fillLevel: '25%', sensor1: 0, sensor2: 0, battery: 0, voltage: 0 };
             }
