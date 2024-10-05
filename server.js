@@ -245,12 +245,12 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
         const statusPromises = dustbins.map(async dustbin => {
             const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
             if (latestSensorData) {
-                const sensors = [latestSensorData.sensor1, latestSensorData.sensor2, latestSensorData.sensor3, latestSensorData.sensor4, latestSensorData.sensor5];
+                const sensors = [latestSensorData.sensor1, latestSensorData.sensor2];
                 const maxSensorValue = Math.max(...sensors);
                 const fillLevel = maxSensorValue > 20 ? '100%' : maxSensorValue > 15 ? '75%' : maxSensorValue > 10 ? '50%' : '25%';
-                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2, sensor3: latestSensorData.sensor3, sensor4: latestSensorData.sensor4, sensor5: latestSensorData.sensor5 };
+                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2 };
             } else {
-                return { ...dustbin.toObject(), fillLevel: '25%', sensor1: 0, sensor2: 0, sensor3: 0, sensor4: 0, sensor5: 0 };
+                return { ...dustbin.toObject(), fillLevel: '25%', sensor1: 0, sensor2: 0 };
             }
         });
         const statuses = await Promise.all(statusPromises);
