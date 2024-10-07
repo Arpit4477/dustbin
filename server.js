@@ -185,9 +185,9 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
 });
 
 
-// New endpoint for receiving sensor data
-app.post('/api/sensor-data', async (req, res) => {
-    const { deviceID, sensor1, sensor2, battery, voltage } = req.body;
+// GET route to handle query parameters
+app.get('/api/sensor-data', async (req, res) => {
+    const { deviceID, sensor1, sensor2, battery, voltage } = req.query; // Extract data from query params
     try {
         const sensorData = new SensorData({ deviceID, sensor1, sensor2, battery, voltage });
         await sensorData.save();
