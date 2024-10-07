@@ -226,6 +226,24 @@ app.put('/api/users/:id', ensureAdmin, async (req, res) => {
     }
 });
 
+// DELETE route to remove a site by its ID
+app.delete('/api/sites/:siteId', async (req, res) => {
+    const { siteId } = req.params;
+
+    try {
+        // Find and remove the site by its ID
+        const deletedSite = await Location.findByIdAndDelete(siteId);
+
+        if (deletedSite) {
+            res.status(200).send(`Site with ID ${siteId} deleted successfully`);
+        } else {
+            res.status(404).send('Site not found');
+        }
+    } catch (err) {
+        res.status(500).send('Error deleting site');
+    }
+});
+
 // Route to serve the admin page
 app.get('/admin', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/admin.html');
