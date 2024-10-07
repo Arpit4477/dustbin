@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin - Manage Users</title>
+    <title>Admin - Manage Users and Sites</title>
     <link rel="stylesheet" href="header.css">
     <style>
         body {
@@ -10,8 +10,6 @@
             background-color: #f4f4f9;
             margin: 0;
         }
-
-        
 
         h1 {
             text-align: center;
@@ -60,6 +58,8 @@
 </head>
 <body>
     <div id="header-placeholder"></div>
+
+    <!-- Manage Users Section -->
     <h1>Manage Users</h1>
     <table id="usersTable">
         <thead>
@@ -74,8 +74,23 @@
             <!-- Users will be dynamically inserted here -->
         </tbody>
     </table>
+
+    <!-- Manage Sites Section -->
+    <h1>Manage Sites</h1>
+    <table id="sitesTable">
+        <thead>
+            <tr>
+                <th>Site ID</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Sites will be dynamically inserted here -->
+        </tbody>
+    </table>
+
     <script>
-        // Fetch users data and populate the table
+        // Fetch users data and populate the users table
         async function fetchUsers() {
             const response = await fetch('/api/users');
             const users = await response.json();
@@ -128,8 +143,50 @@
             }
         }
 
-        // Fetch users data on page load
-        document.addEventListener('DOMContentLoaded', fetchUsers);
+        // Fetch sites data and populate the sites table
+        async function fetchSites() {
+            const response = await fetch('/api/sites'); // Assuming this is your API route to fetch sites
+            const sites = await response.json();
+            const tableBody = document.getElementById('sitesTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = '';
+
+            sites.forEach(site => {
+                const row = document.createElement('tr');
+
+                const siteIdCell = document.createElement('td');
+                siteIdCell.textContent = site.locationId;
+                row.appendChild(siteIdCell);
+
+                const actionsCell = document.createElement('td');
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteSite(site._id);
+                actionsCell.appendChild(deleteButton);
+                row.appendChild(actionsCell);
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Delete a site
+        async function deleteSite(siteId) {
+            const response = await fetch(`/api/sites/${siteId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                alert('Site deleted successfully!');
+                fetchSites(); // Refresh the sites table after deletion
+            } else {
+                alert('Error deleting site.');
+            }
+        }
+
+        // Fetch users and sites data on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchUsers();
+            fetchSites();
+        });
     </script>
     <script src="loadheader.js"></script>
 </body>
