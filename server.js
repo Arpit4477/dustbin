@@ -191,7 +191,7 @@ app.get('/api/sensor-data', async (req, res) => {
     try {
         const sensorData = new SensorData({ deviceID, sensor1, sensor2, battery, voltage });
         await sensorData.save();
-        res.status(201).json(sensorData);
+        res.status(201).send('Saved data successfully');
     } catch (err) {
         res.status(400).send('Error saving sensor data');
     }
