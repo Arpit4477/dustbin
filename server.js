@@ -189,7 +189,7 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
 app.get('/api/sensor-data', async (req, res) => {
     const { ID, s1, s2, by, v } = req.query; // Extract data from query params
     try {
-        const sensorData = new SensorData({ ID, s1, s2, by, v });
+        const sensorData = new SensorData({ ID, s1, s2, b, v });
         await sensorData.save();
         res.status(201).send('OK');
     } catch (err) {
