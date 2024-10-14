@@ -187,9 +187,9 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
 
 // GET route to handle query parameters
 app.get('/api/sensor-data', async (req, res) => {
-    const { ID, s1, s2, b, v } = req.query; // Extract data from query params
+    const { deviceID, sensor1, sensor2, battery, voltage } = req.query; // Extract data from query params
     try {
-        const sensorData = new SensorData({ ID, s1, s2, b, v });
+        const sensorData = new SensorData({ deviceID, sensor1, sensor2, battery, voltage });
         await sensorData.save();
         res.status(201).send('OK');
     } catch (err) {
