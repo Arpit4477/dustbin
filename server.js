@@ -187,13 +187,13 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
 
 // GET route to handle query parameters
 app.get('/api/sensor-data', async (req, res) => {
-    const { deviceID, sensor1, sensor2, battery, voltage } = req.query; // Extract data from query params
+    const { ID, s1, s2, b, v } = req.query; // Extract data from query params
     try {
-        const sensorData = new SensorData({ deviceID, sensor1, sensor2, battery, voltage });
+        const sensorData = new SensorData({ ID, s1, s2, b, v });
         await sensorData.save();
-        res.status(201).json(sensorData);
+        res.status(201).send('OK');
     } catch (err) {
-        res.status(400).send('Error saving sensor data');
+        res.status(400).send('Error');
     }
 });
 
@@ -261,14 +261,14 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
     try {
         const dustbins = await Dustbin.find({ locationId: { $in: req.user.locationIds } });
         const statusPromises = dustbins.map(async dustbin => {
-            const latestSensorData = await SensorData.findOne({ deviceID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
+            const latestSensorData = await SensorData.findOne({ ID: dustbin.deviceId }).sort({ createdAt: -1 }).exec();
             if (latestSensorData) {
-                const sensors = [latestSensorData.sensor1, latestSensorData.sensor2];
+                const sensors = [latestSensorData.s1, latestSensorData.s2];
                 const maxSensorValue = Math.max(...sensors);
                 const fillLevel = maxSensorValue > 20 ? '100%' : maxSensorValue > 15 ? '75%' : maxSensorValue > 10 ? '50%' : '25%';
-                return { ...dustbin.toObject(), fillLevel, sensor1: latestSensorData.sensor1, sensor2: latestSensorData.sensor2, battery: latestSensorData.battery, voltage: latestSensorData.voltage };
+                return { ...dustbin.toObject(), fillLevel, s1: latestSensorData.s1, s2: latestSensorData.s2, b: latestSensorData.b, v: latestSensorData.v };
             } else {
-                return { ...dustbin.toObject(), fillLevel: '25%', sensor1: 0, sensor2: 0, battery: 0, voltage: 0 };
+                return { ...dustbin.toObject(), fillLevel: '25%', s: 0, s: 0, b: 0, v: 0 };
             }
         });
         const statuses = await Promise.all(statusPromises);
