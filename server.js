@@ -268,7 +268,7 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
                 const fillLevel = maxSensorValue > 20 ? '100%' : maxSensorValue > 15 ? '75%' : maxSensorValue > 10 ? '50%' : '25%';
                 return { ...dustbin.toObject(), fillLevel, s1: latestSensorData.s1, s2: latestSensorData.s2, b: latestSensorData.b, v: latestSensorData.v };
             } else {
-                return { ...dustbin.toObject(), fillLevel: '25%', s: 0, s: 0, b: 0, v: 0 };
+                return { ...dustbin.toObject(), fillLevel: '25%', s1: 0, s2: 0, b: 0, v: 0 };
             }
         });
         const statuses = await Promise.all(statusPromises);
