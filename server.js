@@ -198,8 +198,8 @@ app.get('/api/sensor-data', async (req, res) => {
 });
 
 // Fetch the last 5 sensor entries for a specific dustbin
-app.get('/api/sensors/:deviceId', async (req, res) => {
-    const { deviceId } = req.params;
+app.get('/api/sensors/:ID', async (req, res) => {
+    const { ID } = req.params;
     try {
         const sensorData = await SensorData.find({ ID })
             .sort({ createdAt: -1 }) // Sort by createdAt in descending order
