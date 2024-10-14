@@ -197,6 +197,19 @@ app.get('/api/sensor-data', async (req, res) => {
     }
 });
 
+// Fetch the last 5 sensor entries for a specific dustbin
+app.get('/api/sensors/:deviceId', async (req, res) => {
+    const { deviceId } = req.params;
+    try {
+        const sensorData = await SensorData.find({ deviceId })
+            .sort({ createdAt: -1 }) // Sort by createdAt in descending order
+            .limit(5); // Limit to 5 entries
+        res.json(sensorData);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch sensor data' });
+    }
+});
+
 // Route to get all users (admin only)
 app.get('/api/users', ensureAdmin, async (req, res) => {
     try {
