@@ -201,7 +201,7 @@ app.get('/api/sensor-data', async (req, res) => {
 app.get('/api/sensors/:deviceId', async (req, res) => {
     const { deviceId } = req.params;
     try {
-        const sensorData = await SensorData.find({ deviceId })
+        const sensorData = await SensorData.find({ ID })
             .sort({ createdAt: -1 }) // Sort by createdAt in descending order
             .limit(5); // Limit to 5 entries
         res.json(sensorData);
