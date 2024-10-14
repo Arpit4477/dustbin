@@ -63,36 +63,39 @@ const applyFilters = () => {
         const fillLevel = getFillLevel(dustbin);
         if ((locationFilter === '' || dustbin.locationId === locationFilter) &&
             (fillLevelFilter === '' || fillLevel === fillLevelFilter)) {
+            
             const icon = icons[fillLevel] || icons['25%']; // Default to 25% if unknown
-            const marker = L.marker([dustbin.lat, dustbin.lng], { icon })
-                .addTo(map)
-                .bindPopup(async function () {
-                    // Fetch the last 5 sensor entries
-                    let sensorDataHtml = 'No sensor data available.';
-                    try {
-                        const response = await fetch(`/api/sensors/${dustbin.deviceId}`);
-                        if (response.ok) {
-                            const sensorData = await response.json();
-                            sensorDataHtml = '<strong>Last 5 Sensor Entries:</strong><br><ul>';
-                            sensorData.forEach(data => {
-                                sensorDataHtml += `
-                                    <li>
-                                        s1: ${data.s1}, s2: ${data.s2}, 
-                                        Battery: ${data.b}, Voltage: ${data.v}, 
-                                        Time: ${new Date(data.createdAt).toLocaleString()}
-                                    </li>`;
-                            });
-                            sensorDataHtml += '</ul>';
-                        } else {
-                            sensorDataHtml = 'Error fetching sensor data.';
-                        }
-                    } catch (error) {
-                        sensorDataHtml = 'Error fetching sensor data.';
-                    }
+            
+            const marker = L.marker([dustbin.lat, dustbin.lng], { icon }).addTo(map);
 
-                    return `Dustbin at Location ID: ${dustbin.locationId}, 
-                            Device ID: ${dustbin.deviceId}, 
-                            Status: ${fillLevel}<br>${sensorDataHtml}`;
+            // Show initial content
+            marker.bindPopup(`Loading sensor data for Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}...`).openPopup();
+
+            // Fetch the sensor data asynchronously
+            fetch(`/api/sensors/${dustbin.deviceId}`)
+                .then(response => response.json())
+                .then(sensorData => {
+                    let sensorDataHtml = '<strong>Last 5 Sensor Entries:</strong><br><ul>';
+                    sensorData.forEach(data => {
+                        sensorDataHtml += `
+                            <li>
+                                s1: ${data.s1}, s2: ${data.s2}, 
+                                Battery: ${data.b}, Voltage: ${data.v}, 
+                                Time: ${new Date(data.createdAt).toLocaleString()}
+                            </li>`;
+                    });
+                    sensorDataHtml += '</ul>';
+
+                    // Update the popup with the fetched data
+                    marker.getPopup().setContent(
+                        `Dustbin at Location ID: ${dustbin.locationId}, 
+                        Device ID: ${dustbin.deviceId}, 
+                        Status: ${fillLevel}<br>${sensorDataHtml}`
+                    ).update();
+                })
+                .catch(error => {
+                    // Handle errors by updating the popup with an error message
+                    marker.getPopup().setContent('Error fetching sensor data.').update();
                 });
 
             bounds.push(marker.getLatLng());
