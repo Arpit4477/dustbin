@@ -2,14 +2,14 @@
 const mongoose = require('mongoose');
 
 const SensorDataSchema = new mongoose.Schema({
-    ID: {
+    deviceID: {
         type: String,
         required: true
     },
-    s1: Number,
-    s2: Number,
-    b: Number,
-    v: Number,
+    sensor1: Number,
+    sensor2: Number,
+    battery: Number,
+    voltage: Number,
     createdAt: {
         type: Date,
         default: Date.now
