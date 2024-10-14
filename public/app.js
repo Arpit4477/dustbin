@@ -66,7 +66,35 @@ const applyFilters = () => {
             const icon = icons[fillLevel] || icons['25%']; // Default to 25% if unknown
             const marker = L.marker([dustbin.lat, dustbin.lng], { icon })
                 .addTo(map)
-                .bindPopup(`Dustbin at Location ID: ${dustbin.locationId}, Device ID: ${dustbin.deviceId}, Status: ${fillLevel}`);
+                .bindPopup(async function () {
+                    // Fetch the last 5 sensor entries
+                    let sensorDataHtml = 'No sensor data available.';
+                    try {
+                        const response = await fetch(`/api/sensors/${dustbin.deviceId}`);
+                        if (response.ok) {
+                            const sensorData = await response.json();
+                            sensorDataHtml = '<strong>Last 5 Sensor Entries:</strong><br><ul>';
+                            sensorData.forEach(data => {
+                                sensorDataHtml += `
+                                    <li>
+                                        s1: ${data.s1}, s2: ${data.s2}, 
+                                        Battery: ${data.b}, Voltage: ${data.v}, 
+                                        Time: ${new Date(data.createdAt).toLocaleString()}
+                                    </li>`;
+                            });
+                            sensorDataHtml += '</ul>';
+                        } else {
+                            sensorDataHtml = 'Error fetching sensor data.';
+                        }
+                    } catch (error) {
+                        sensorDataHtml = 'Error fetching sensor data.';
+                    }
+
+                    return `Dustbin at Location ID: ${dustbin.locationId}, 
+                            Device ID: ${dustbin.deviceId}, 
+                            Status: ${fillLevel}<br>${sensorDataHtml}`;
+                });
+
             bounds.push(marker.getLatLng());
         }
     });
