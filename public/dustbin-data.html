@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dustbins</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Your Assigned Dustbins</h1>
+    <table id="dustbinTable">
+        <thead>
+            <tr>
+                <th>Dustbin ID</th>
+                <th>Location ID</th>
+                <th>Sensor 1</th>
+                <th>Sensor 2</th>
+                <th>Battery</th>
+                <th>Voltage</th>
+                <th>Timestamp</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be injected here dynamically -->
+        </tbody>
+    </table>
+
+    <script>
+        // Fetch the data from the API
+        fetch('/api/user-dustbins')
+            .then(response => response.json())
+            .then(data => {
+                const dustbinTable = document.getElementById('dustbinTable').getElementsByTagName('tbody')[0];
+                data.sensorData.forEach(sensor => {
+                    const row = dustbinTable.insertRow();
+                    row.innerHTML = `
+                        <td>${sensor.ID}</td>
+                        <td>${sensor.locationId}</td>
+                        <td>${sensor.s1}</td>
+                        <td>${sensor.s2}</td>
+                        <td>${sensor.b}</td>
+                        <td>${sensor.v}</td>
+                        <td>${new Date(sensor.createdAt).toLocaleString()}</td>
+                    `;
+                });
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+    </script>
+</body>
+</html>
