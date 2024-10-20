@@ -257,6 +257,25 @@ app.delete('/api/sites/:siteId', async (req, res) => {
     }
 });
 
+// GET route to fetch sensor data for dustbins assigned to a user
+app.get('/api/user-dustbins', async (req, res) => {
+    const userId = req.user._id; // Assuming user ID is available through authentication
+
+    try {
+        // Fetch dustbins assigned to the user
+        const dustbins = await Dustbin.find({ assignedTo: userId }); 
+
+        // Fetch sensor data for each dustbin
+        const dustbinIds = dustbins.map(dustbin => dustbin.deviceId);
+        const sensorData = await SensorData.find({ ID: { $in: dustbinIds } }).sort({ createdAt: -1 });
+
+        res.status(200).json({ dustbins, sensorData });
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Error fetching sensor data.');
+    }
+});
+
 // Route to serve the admin page
 app.get('/admin', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/admin.html');
