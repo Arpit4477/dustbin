@@ -3,92 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sensor Data</title>
+    <title>User Dustbins and Sensor Data</title>
+    <link rel="stylesheet" href="style.css">
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
         table {
-            width: 100%;
+            width: 80%;
+            margin: 20px auto;
             border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
+
         table, th, td {
-            border: 1px solid black;
+            border: 1px solid #ddd;
         }
+
         th, td {
-            padding: 10px;
+            padding: 8px;
             text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
         }
     </style>
 </head>
 <body>
-
-    <h1>Sensor Data for Dustbins Assigned to You</h1>
-
-    <table id="sensor-data-table">
+    <h1>Your Dustbins and Sensor Data</h1>
+    <table id="dustbinsTable">
         <thead>
             <tr>
                 <th>Location ID</th>
                 <th>Device ID</th>
-                <th>Fill Level</th>
-                <th>Sensor Data</th>
+                <th>Sensor 1</th>
+                <th>Sensor 2</th>
+                <th>Battery</th>
+                <th>Voltage</th>
+                <th>Last Updated</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Data will be dynamically added here -->
+            <!-- Data will be populated here -->
         </tbody>
     </table>
 
     <script>
-        async function fetchSensorData() {
+        async function fetchDustbinsAndSensors() {
             try {
-                const response = await fetch('/api/sensor-data');
-                const data = await response.json();
-                const tableBody = document.querySelector('#sensor-data-table tbody');
+                const response = await fetch('/api/dustbins');
+                const dustbins = await response.json();
+                const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // Clear previous rows
+                
+                for (const dustbin of dustbins) {
+                    const sensorResponse = await fetch(`/api/sensors/${dustbin.deviceId}`);
+                    const sensorData = await sensorResponse.json();
 
-                data.forEach(({ dustbin, sensorData }) => {
-                    const row = document.createElement('tr');
-                    
-                    // Location ID and Device ID
-                    row.innerHTML = `
-                        <td>${dustbin.locationId}</td>
-                        <td>${dustbin.deviceId}</td>
-                        <td>${getFillLevel(sensorData)}</td>
-                        <td>${formatSensorData(sensorData)}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
+                    sensorData.forEach(sensor => {
+                        const row = document.createElement('tr');
+                        
+                        const locationIdCell = document.createElement('td');
+                        locationIdCell.textContent = dustbin.locationId;
+                        row.appendChild(locationIdCell);
+
+                        const deviceIdCell = document.createElement('td');
+                        deviceIdCell.textContent = dustbin.deviceId;
+                        row.appendChild(deviceIdCell);
+
+                        const sensor1Cell = document.createElement('td');
+                        sensor1Cell.textContent = sensor.s1;
+                        row.appendChild(sensor1Cell);
+
+                        const sensor2Cell = document.createElement('td');
+                        sensor2Cell.textContent = sensor.s2;
+                        row.appendChild(sensor2Cell);
+
+                        const batteryCell = document.createElement('td');
+                        batteryCell.textContent = sensor.b;
+                        row.appendChild(batteryCell);
+
+                        const voltageCell = document.createElement('td');
+                        voltageCell.textContent = sensor.v;
+                        row.appendChild(voltageCell);
+
+                        const updatedAtCell = document.createElement('td');
+                        updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
+                        row.appendChild(updatedAtCell);
+
+                        tableBody.appendChild(row);
+                    });
+                }
             } catch (error) {
-                console.error('Error fetching sensor data:', error);
+                console.error('Error:', error);
             }
         }
 
-        function getFillLevel(sensorData) {
-            if (sensorData.length > 0) {
-                const lastSensor = sensorData[0]; // Get the most recent data
-                const maxSensorValue = Math.max(lastSensor.s1, lastSensor.s2);
-                return maxSensorValue > 20 ? '100%' :
-                       maxSensorValue > 15 ? '75%' :
-                       maxSensorValue > 10 ? '50%' : '25%';
-            } else {
-                return '25%';
-            }
-        }
-
-        function formatSensorData(sensorData) {
-            if (sensorData.length > 0) {
-                return sensorData.map(data => `
-                    s1: ${data.s1}, 
-                    s2: ${data.s2}, 
-                    Battery: ${data.b}, 
-                    Voltage: ${data.v}, 
-                    Time: ${new Date(data.createdAt).toLocaleString()}
-                `).join('<br>');
-            } else {
-                return 'No data available';
-            }
-        }
-
-        // Fetch and display the sensor data when the page loads
-        document.addEventListener('DOMContentLoaded', fetchSensorData);
+        // Fetch and display dustbins and sensor data when page loads
+        document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
     </script>
-
 </body>
 </html>
