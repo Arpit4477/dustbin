@@ -257,21 +257,7 @@ app.delete('/api/sites/:siteId', async (req, res) => {
     }
 });
 
-// New API endpoint to fetch all sensor data for dustbins assigned to the user
-app.get('/api/user-dustbins', ensureAuthenticated, async (req, res) => {
-    try {
-        const dustbins = await Dustbin.find({ locationId: { $in: req.user.locationIds } });
-        const sensorDataPromises = dustbins.map(async (dustbin) => {
-            const sensorData = await SensorData.find({ ID: dustbin.deviceId }).sort({ createdAt: -1 });
-            return { dustbin, sensorData };
-        });
 
-        const dustbinSensorData = await Promise.all(sensorDataPromises);
-        res.json(dustbinSensorData);
-    } catch (err) {
-        res.status(500).send('Error fetching sensor data');
-    }
-});
 
 // Route to serve the admin page
 app.get('/admin', ensureAdmin, (req, res) => {
