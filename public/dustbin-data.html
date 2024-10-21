@@ -80,7 +80,7 @@
                 tableBody.innerHTML = ''; // Clear previous rows
                 
                 for (const dustbin of dustbins) {
-                    const sensorResponse = await fetch(`/api/sensors/${dustbin.deviceId}`);
+                    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
                     const sensorData = await sensorResponse.json();
 
                     sensorData.forEach(sensor => {
