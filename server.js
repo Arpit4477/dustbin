@@ -132,7 +132,7 @@ app.post('/api/dustbins', ensureAdmin, async (req, res) => {
         await dustbin.save();
         res.status(201).json(dustbin);
     } catch (err) {
-        res.status(400).send('Error saving dustbin');
+        res.status(400).send('400');
     }
 });
 
@@ -141,7 +141,7 @@ app.get('/api/user', (req, res) => {
     if (req.isAuthenticated()) {
         res.json(req.user);
     } else {
-        res.status(401).send('Unauthorized');
+        res.status(401).send('401');
     }
 });
 
@@ -159,7 +159,7 @@ app.post('/addSite', ensureAdmin, async (req, res) => {
         // Check if the location already exists
         const existingLocation = await Location.findOne({ locationId });
         if (existingLocation) {
-            return res.status(400).send('Site already exists');
+            return res.status(400).send('400');
         }
 
         // If it doesn't exist, create a new location
@@ -172,9 +172,9 @@ app.post('/addSite', ensureAdmin, async (req, res) => {
             { $addToSet: { locationIds: locationId } } // Add new location to their locationIds array
         );
 
-        res.status(201).send('Location ID added successfully');
+        res.status(201).send('201');
     } catch (err) {
-        res.status(400).send('Error adding location ID');
+        res.status(400).send('400');
     }
 });
 
@@ -185,7 +185,7 @@ app.get('/api/Sites', ensureAuthenticated, async (req, res) => {
         const locations = await Location.find();
         res.json(locations);
     } catch (err) {
-        res.status(500).send('Error fetching locations');
+        res.status(500).send('500');
     }
 });
 
@@ -196,9 +196,9 @@ app.get('/api/sensor-data', async (req, res) => {
     try {
         const sensorData = new SensorData({ ID, s1, s2, b, v });
         await sensorData.save();
-        res.status(201).send('OK');
+        res.status(201).send('201');
     } catch (err) {
-        res.status(400).send('Error');
+        res.status(400).send('400');
     }
 });
 
@@ -265,10 +265,10 @@ app.delete('/api/sites/:siteId', async (req, res) => {
         if (deletedSite) {
             res.status(200).send(`Site with ID ${siteId} deleted successfully`);
         } else {
-            res.status(404).send('Site not found');
+            res.status(404).send('404');
         }
     } catch (err) {
-        res.status(500).send('Error deleting site');
+        res.status(500).send('500');
     }
 });
 
@@ -304,7 +304,7 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
         const statuses = await Promise.all(statusPromises);
         res.json(statuses);
     } catch (err) {
-        res.status(500).send('Error fetching dustbin statuses');
+        res.status(500).send('500');
     }
 });
 
