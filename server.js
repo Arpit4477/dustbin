@@ -257,22 +257,19 @@ app.delete('/api/sites/:siteId', async (req, res) => {
     }
 });
 
-// GET route to fetch sensor data for dustbins assigned to a user
-app.get('/api/user-dustbins', async (req, res) => {
-    const userId = req.user._id; // Assuming user ID is available through authentication
-
+// New API endpoint to fetch all sensor data for dustbins assigned to the user
+app.get('/api/user-dustbins', ensureAuthenticated, async (req, res) => {
     try {
-        // Fetch dustbins assigned to the user
-        const dustbins = await Dustbin.find({ assignedTo: userId }); 
+        const dustbins = await Dustbin.find({ locationId: { $in: req.user.locationIds } });
+        const sensorDataPromises = dustbins.map(async (dustbin) => {
+            const sensorData = await SensorData.find({ ID: dustbin.deviceId }).sort({ createdAt: -1 });
+            return { dustbin, sensorData };
+        });
 
-        // Fetch sensor data for each dustbin
-        const dustbinIds = dustbins.map(dustbin => dustbin.deviceId);
-        const sensorData = await SensorData.find({ ID: { $in: dustbinIds } }).sort({ createdAt: -1 });
-
-        res.status(200).json({ dustbins, sensorData });
+        const dustbinSensorData = await Promise.all(sensorDataPromises);
+        res.json(dustbinSensorData);
     } catch (err) {
-        console.error(err);
-        res.status(500).send('Error fetching sensor data.');
+        res.status(500).send('Error fetching sensor data');
     }
 });
 
