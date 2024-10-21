@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dustbins and Sensor Data</title>
+    <link rel="stylesheet" href="header.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        button {
+            padding: 5px 10px;
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #4cae4c;
+        }
+    </style>
+</head>
+<body>
+    <div id="header-placeholder"></div>
+    <h1>Your Dustbins and Sensor Data</h1>
+    <table id="dustbinsTable">
+        <thead>
+            <tr>
+                <th>Location ID</th>
+                <th>Device ID</th>
+                <th>Sensor 1</th>
+                <th>Sensor 2</th>
+                <th>Battery</th>
+                <th>Voltage</th>
+                <th>Last Updated</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        async function fetchDustbinsAndSensors() {
+            try {
+                const response = await fetch('/api/dustbins');
+                const dustbins = await response.json();
+                const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
+                tableBody.innerHTML = ''; // Clear previous rows
+                
+                for (const dustbin of dustbins) {
+                    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+                    const sensorData = await sensorResponse.json();
+
+                    sensorData.forEach(sensor => {
+                        const row = document.createElement('tr');
+                        
+                        const locationIdCell = document.createElement('td');
+                        locationIdCell.textContent = dustbin.locationId;
+                        row.appendChild(locationIdCell);
+
+                        const deviceIdCell = document.createElement('td');
+                        deviceIdCell.textContent = dustbin.deviceId;
+                        row.appendChild(deviceIdCell);
+
+                        const sensor1Cell = document.createElement('td');
+                        sensor1Cell.textContent = sensor.s1;
+                        row.appendChild(sensor1Cell);
+
+                        const sensor2Cell = document.createElement('td');
+                        sensor2Cell.textContent = sensor.s2;
+                        row.appendChild(sensor2Cell);
+
+                        const batteryCell = document.createElement('td');
+                        batteryCell.textContent = sensor.b;
+                        row.appendChild(batteryCell);
+
+                        const voltageCell = document.createElement('td');
+                        voltageCell.textContent = sensor.v;
+                        row.appendChild(voltageCell);
+
+                        const updatedAtCell = document.createElement('td');
+                        updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
+                        row.appendChild(updatedAtCell);
+
+                        tableBody.appendChild(row);
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        // Fetch and display dustbins and sensor data when page loads
+        document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
+    </script>
+    <script src="loadheader.js"></script>
+</body>
+</html>
