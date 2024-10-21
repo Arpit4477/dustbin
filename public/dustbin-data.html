@@ -3,63 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Dustbins</title>
+    <title>Sensor Data</title>
     <style>
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
+        table, th, td {
             border: 1px solid black;
-            padding: 8px;
-            text-align: center;
         }
-        th {
-            background-color: #f2f2f2;
+        th, td {
+            padding: 10px;
+            text-align: left;
         }
     </style>
 </head>
 <body>
-    <h1>Your Assigned Dustbins</h1>
-    <table id="dustbinTable">
+
+    <h1>Sensor Data for Dustbins Assigned to You</h1>
+
+    <table id="sensor-data-table">
         <thead>
             <tr>
-                <th>Dustbin ID</th>
                 <th>Location ID</th>
-                <th>Sensor 1</th>
-                <th>Sensor 2</th>
-                <th>Battery</th>
-                <th>Voltage</th>
-                <th>Timestamp</th>
+                <th>Device ID</th>
+                <th>Fill Level</th>
+                <th>Sensor Data</th>
             </tr>
         </thead>
         <tbody>
-            <!-- Data will be injected here dynamically -->
+            <!-- Data will be dynamically added here -->
         </tbody>
     </table>
 
     <script>
-        // Fetch the data from the API
-        fetch('/api/user-dustbins')
-            .then(response => response.json())
-            .then(data => {
-                const dustbinTable = document.getElementById('dustbinTable').getElementsByTagName('tbody')[0];
-                data.sensorData.forEach(sensor => {
-                    const row = dustbinTable.insertRow();
+        async function fetchSensorData() {
+            try {
+                const response = await fetch('/api/sensor-data');
+                const data = await response.json();
+                const tableBody = document.querySelector('#sensor-data-table tbody');
+
+                data.forEach(({ dustbin, sensorData }) => {
+                    const row = document.createElement('tr');
+                    
+                    // Location ID and Device ID
                     row.innerHTML = `
-                        <td>${sensor.ID}</td>
-                        <td>${sensor.locationId}</td>
-                        <td>${sensor.s1}</td>
-                        <td>${sensor.s2}</td>
-                        <td>${sensor.b}</td>
-                        <td>${sensor.v}</td>
-                        <td>${new Date(sensor.createdAt).toLocaleString()}</td>
+                        <td>${dustbin.locationId}</td>
+                        <td>${dustbin.deviceId}</td>
+                        <td>${getFillLevel(sensorData)}</td>
+                        <td>${formatSensorData(sensorData)}</td>
                     `;
+                    tableBody.appendChild(row);
                 });
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+            } catch (error) {
+                console.error('Error fetching sensor data:', error);
+            }
+        }
+
+        function getFillLevel(sensorData) {
+            if (sensorData.length > 0) {
+                const lastSensor = sensorData[0]; // Get the most recent data
+                const maxSensorValue = Math.max(lastSensor.s1, lastSensor.s2);
+                return maxSensorValue > 20 ? '100%' :
+                       maxSensorValue > 15 ? '75%' :
+                       maxSensorValue > 10 ? '50%' : '25%';
+            } else {
+                return '25%';
+            }
+        }
+
+        function formatSensorData(sensorData) {
+            if (sensorData.length > 0) {
+                return sensorData.map(data => `
+                    s1: ${data.s1}, 
+                    s2: ${data.s2}, 
+                    Battery: ${data.b}, 
+                    Voltage: ${data.v}, 
+                    Time: ${new Date(data.createdAt).toLocaleString()}
+                `).join('<br>');
+            } else {
+                return 'No data available';
+            }
+        }
+
+        // Fetch and display the sensor data when the page loads
+        document.addEventListener('DOMContentLoaded', fetchSensorData);
     </script>
+
 </body>
 </html>
