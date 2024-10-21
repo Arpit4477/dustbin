@@ -114,9 +114,9 @@ app.get('/add', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/add.html'); // You need to create add.html
 });
 
-// Serve the dustbin data page
+// Serve the dustbin data page with EJS
 app.get('/dustbin-data', ensureAuthenticated, (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'dustbin-data.html'));
+    res.render('dustbin-data', { user: req.user });
 });
 
 app.get('/api/dustbins', ensureAuthenticated, async (req, res) => {
