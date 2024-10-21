@@ -52,7 +52,19 @@
     </style>
 </head>
 <body>
-    <div id="header-placeholder"></div>
+    <nav>
+    <a href="/">Home</a>
+    <!-- Check if the user is an admin -->
+    <% if (user && user.role === 'admin') { %>
+        <a href="/admin">Admin</a>
+        <a href="/register">Add User</a>
+        <a href="/addSite">Add Site</a>
+        <a href="/add">Add Dustbin</a>
+    <% } %>
+    <a href="/dustbin-data">Dustbin Data</a>
+    <a href="/logout">Logout</a>
+</nav>
+
     <h1>Your Dustbins and Sensor Data</h1>
     <table id="dustbinsTable">
         <thead>
