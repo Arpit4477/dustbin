@@ -114,6 +114,11 @@ app.get('/add', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/add.html'); // You need to create add.html
 });
 
+// Serve the dustbin data page
+app.get('/dustbin-data', ensureAuthenticated, (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'dustbin-data.html'));
+});
+
 app.get('/api/dustbins', ensureAuthenticated, async (req, res) => {
     const user = req.user;
     const dustbins = await Dustbin.find({ locationId: { $in: user.locationIds } });
