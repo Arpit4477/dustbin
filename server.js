@@ -210,6 +210,16 @@ app.get('/api/sensors/:ID', async (req, res) => {
     }
 });
 
+app.get('/api/sensors/all/:ID', async (req, res) => {
+    const { ID } = req.params;
+    try {
+        const sensorData = await SensorData.find({ ID });
+        res.json(sensorData);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching sensor data' });
+    }
+});
+
 // Route to get all users (admin only)
 app.get('/api/users', ensureAdmin, async (req, res) => {
     try {
