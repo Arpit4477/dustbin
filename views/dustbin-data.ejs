@@ -17,6 +17,18 @@
             margin-top: 20px;
         }
 
+        #filter {
+            width: 80%;
+            margin: 20px auto;
+            text-align: center;
+        }
+
+        select {
+            padding: 5px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
         table {
             width: 80%;
             margin: 20px auto;
@@ -52,20 +64,18 @@
     </style>
 </head>
 <body>
-    <nav>
-    <a href="/">Home</a>
-    <!-- Check if the user is an admin -->
-    <% if (user && user.role === 'admin') { %>
-        <a href="/admin">Admin</a>
-        <a href="/register">Add User</a>
-        <a href="/addSite">Add Site</a>
-        <a href="/add">Add Dustbin</a>
-    <% } %>
-    <a href="/dustbin-data">Dustbin Data</a>
-    <a href="/logout">Logout</a>
-</nav>
-
+    <div id="header-placeholder"></div>
     <h1>Your Dustbins and Sensor Data</h1>
+    
+    <!-- Filter dropdown -->
+    <div id="filter">
+        <label for="locationFilter">Filter by Location:</label>
+        <select id="locationFilter" onchange="filterDustbinsByLocation()">
+            <option value="all">All Locations</option>
+            <!-- Options will be populated dynamically -->
+        </select>
+    </div>
+    
     <table id="dustbinsTable">
         <thead>
             <tr>
@@ -84,53 +94,76 @@
     </table>
 
     <script>
+        let dustbins = [];
+
         async function fetchDustbinsAndSensors() {
             try {
                 const response = await fetch('/api/dustbins');
-                const dustbins = await response.json();
-                const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
-                tableBody.innerHTML = ''; // Clear previous rows
+                dustbins = await response.json();
                 
-                for (const dustbin of dustbins) {
-                    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-                    const sensorData = await sensorResponse.json();
-
-                    sensorData.forEach(sensor => {
-                        const row = document.createElement('tr');
-                        
-                        const locationIdCell = document.createElement('td');
-                        locationIdCell.textContent = dustbin.locationId;
-                        row.appendChild(locationIdCell);
-
-                        const deviceIdCell = document.createElement('td');
-                        deviceIdCell.textContent = dustbin.deviceId;
-                        row.appendChild(deviceIdCell);
-
-                        const sensor1Cell = document.createElement('td');
-                        sensor1Cell.textContent = sensor.s1;
-                        row.appendChild(sensor1Cell);
-
-                        const sensor2Cell = document.createElement('td');
-                        sensor2Cell.textContent = sensor.s2;
-                        row.appendChild(sensor2Cell);
-
-                        const batteryCell = document.createElement('td');
-                        batteryCell.textContent = sensor.b;
-                        row.appendChild(batteryCell);
-
-                        const voltageCell = document.createElement('td');
-                        voltageCell.textContent = sensor.v;
-                        row.appendChild(voltageCell);
-
-                        const updatedAtCell = document.createElement('td');
-                        updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
-                        row.appendChild(updatedAtCell);
-
-                        tableBody.appendChild(row);
-                    });
-                }
+                populateLocationFilter();
+                filterDustbinsByLocation();
             } catch (error) {
                 console.error('Error:', error);
+            }
+        }
+
+        function populateLocationFilter() {
+            const locationFilter = document.getElementById('locationFilter');
+            const uniqueLocations = [...new Set(dustbins.map(dustbin => dustbin.locationId))];
+
+            uniqueLocations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = `Location ${location}`;
+                locationFilter.appendChild(option);
+            });
+        }
+
+        async function filterDustbinsByLocation() {
+            const selectedLocation = document.getElementById('locationFilter').value;
+            const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
+            tableBody.innerHTML = ''; // Clear previous rows
+
+            const filteredDustbins = selectedLocation === 'all' ? dustbins : dustbins.filter(dustbin => dustbin.locationId === selectedLocation);
+            
+            for (const dustbin of filteredDustbins) {
+                const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+                const sensorData = await sensorResponse.json();
+
+                sensorData.forEach(sensor => {
+                    const row = document.createElement('tr');
+                    
+                    const locationIdCell = document.createElement('td');
+                    locationIdCell.textContent = dustbin.locationId;
+                    row.appendChild(locationIdCell);
+
+                    const deviceIdCell = document.createElement('td');
+                    deviceIdCell.textContent = dustbin.deviceId;
+                    row.appendChild(deviceIdCell);
+
+                    const sensor1Cell = document.createElement('td');
+                    sensor1Cell.textContent = sensor.s1;
+                    row.appendChild(sensor1Cell);
+
+                    const sensor2Cell = document.createElement('td');
+                    sensor2Cell.textContent = sensor.s2;
+                    row.appendChild(sensor2Cell);
+
+                    const batteryCell = document.createElement('td');
+                    batteryCell.textContent = sensor.b;
+                    row.appendChild(batteryCell);
+
+                    const voltageCell = document.createElement('td');
+                    voltageCell.textContent = sensor.v;
+                    row.appendChild(voltageCell);
+
+                    const updatedAtCell = document.createElement('td');
+                    updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
+                    row.appendChild(updatedAtCell);
+
+                    tableBody.appendChild(row);
+                });
             }
         }
 
