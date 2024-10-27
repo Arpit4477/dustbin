@@ -29,6 +29,20 @@
             margin-bottom: 20px;
         }
 
+        #download-btn {
+            padding: 10px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #download-btn:hover {
+            background-color: #0056b3;
+        }
+
         table {
             width: 80%;
             margin: 20px auto;
@@ -74,6 +88,11 @@
             <option value="all">All Locations</option>
             <!-- Options will be populated dynamically -->
         </select>
+    </div>
+
+    <!-- Download CSV Button -->
+    <div id="download-container" style="text-align:center;">
+        <button id="download-btn" onclick="downloadCSV()">Download CSV</button>
     </div>
     
     <table id="dustbinsTable">
@@ -165,6 +184,54 @@
                     tableBody.appendChild(row);
                 });
             }
+        }
+
+        function convertToCSV(data) {
+            const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
+            const csvRows = [];
+
+            csvRows.push(headers.join(',')); // Add headers to the CSV file
+
+            data.forEach(dustbin => {
+                dustbin.sensors.forEach(sensor => {
+                    const row = [
+                        dustbin.locationId,
+                        dustbin.deviceId,
+                        sensor.s1,
+                        sensor.s2,
+                        sensor.b,
+                        sensor.v,
+                        new Date(sensor.createdAt).toLocaleString()
+                    ];
+                    csvRows.push(row.join(','));
+                });
+            });
+
+            return csvRows.join('\n');
+        }
+
+        async function downloadCSV() {
+            const selectedLocation = document.getElementById('locationFilter').value;
+            const filteredDustbins = selectedLocation === 'all' ? dustbins : dustbins.filter(dustbin => dustbin.locationId === selectedLocation);
+            const enrichedDustbins = [];
+
+            for (const dustbin of filteredDustbins) {
+                const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+                const sensorData = await sensorResponse.json();
+                enrichedDustbins.push({ ...dustbin, sensors: sensorData });
+            }
+
+            const csvData = convertToCSV(enrichedDustbins);
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'dustbins_data.csv';
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // Fetch and display dustbins and sensor data when page loads
