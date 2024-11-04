@@ -272,6 +272,27 @@ app.delete('/api/sites/:siteId', async (req, res) => {
     }
 });
 
+// Import your Dustbin model (adjust the path as necessary)
+const Dustbin = require('./models/dustbin');
+
+// DELETE request to delete a dustbin by deviceId
+app.delete('/api/dustbins/delete/:deviceId', async (req, res) => {
+    try {
+        const { deviceId } = req.params;
+
+        // Find and delete the dustbin by deviceId
+        const deletedDustbin = await Dustbin.findOneAndDelete({ deviceId });
+
+        if (deletedDustbin) {
+            res.status(200).json({ message: 'Dustbin deleted successfully.' });
+        } else {
+            res.status(404).json({ message: 'Dustbin not found.' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: 'Server error. Could not delete dustbin.', error });
+    }
+});
+
 
 
 // Route to serve the admin page
