@@ -196,7 +196,6 @@
         }
 
 async function deleteSensorData(sensorId) {
-    if (confirm('Are you sure you want to delete this sensor data?')) {
         try {
             const response = await fetch(`/sensors/delete/${sensorId}`, {
                 method: 'DELETE'
@@ -204,7 +203,6 @@ async function deleteSensorData(sensorId) {
 
             const result = await response.json();
             if (response.ok) {
-                alert(result.message);
                 fetchDustbinsAndSensors(); // Refresh the table
             } else {
                 alert('Error: ' + result.message);
@@ -212,7 +210,6 @@ async function deleteSensorData(sensorId) {
         } catch (error) {
             console.error('Error:', error);
         }
-    }
 }
 
         
