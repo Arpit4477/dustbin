@@ -148,70 +148,74 @@
             const filteredDustbins = selectedLocation === 'all' ? dustbins : dustbins.filter(dustbin => dustbin.locationId === selectedLocation);
             
             for (const dustbin of filteredDustbins) {
-                const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-                const sensorData = await sensorResponse.json();
+    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+    const sensorData = await sensorResponse.json();
 
-                sensorData.forEach(sensor => {
-                    const row = document.createElement('tr');
-                    
-                    const locationIdCell = document.createElement('td');
-                    locationIdCell.textContent = dustbin.locationId;
-                    row.appendChild(locationIdCell);
+    sensorData.forEach(sensor => {
+        const row = document.createElement('tr');
 
-                    const deviceIdCell = document.createElement('td');
-                    deviceIdCell.textContent = dustbin.deviceId;
-                    row.appendChild(deviceIdCell);
+        const locationIdCell = document.createElement('td');
+        locationIdCell.textContent = dustbin.locationId;
+        row.appendChild(locationIdCell);
 
-                    const sensor1Cell = document.createElement('td');
-                    sensor1Cell.textContent = sensor.s1;
-                    row.appendChild(sensor1Cell);
+        const deviceIdCell = document.createElement('td');
+        deviceIdCell.textContent = dustbin.deviceId;
+        row.appendChild(deviceIdCell);
 
-                    const sensor2Cell = document.createElement('td');
-                    sensor2Cell.textContent = sensor.s2;
-                    row.appendChild(sensor2Cell);
+        const sensor1Cell = document.createElement('td');
+        sensor1Cell.textContent = sensor.s1;
+        row.appendChild(sensor1Cell);
 
-                    const batteryCell = document.createElement('td');
-                    batteryCell.textContent = sensor.b;
-                    row.appendChild(batteryCell);
+        const sensor2Cell = document.createElement('td');
+        sensor2Cell.textContent = sensor.s2;
+        row.appendChild(sensor2Cell);
 
-                    const voltageCell = document.createElement('td');
-                    voltageCell.textContent = sensor.v;
-                    row.appendChild(voltageCell);
+        const batteryCell = document.createElement('td');
+        batteryCell.textContent = sensor.b;
+        row.appendChild(batteryCell);
 
-                    const updatedAtCell = document.createElement('td');
-                    updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
-                    row.appendChild(updatedAtCell);
+        const voltageCell = document.createElement('td');
+        voltageCell.textContent = sensor.v;
+        row.appendChild(voltageCell);
 
-                    // Add delete button
-                    const actionsCell = document.createElement('td');
-                    const deleteButton = document.createElement('button');
-                    deleteButton.textContent = 'Delete';
-                    deleteButton.onclick = () => deleteDustbin(dustbin.deviceId, row); // Pass the row to delete
-                    actionsCell.appendChild(deleteButton);
-                    row.appendChild(actionsCell);
+        const updatedAtCell = document.createElement('td');
+        updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
+        row.appendChild(updatedAtCell);
 
-                    tableBody.appendChild(row);
-                });
-            }
+        // Add delete button
+        const deleteCell = document.createElement('td');
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'Delete';
+        deleteButton.onclick = () => deleteSensorData(sensor.ID); // Use sensor ID for deletion
+        deleteCell.appendChild(deleteButton);
+        row.appendChild(deleteCell);
+
+        tableBody.appendChild(row);
+    });
+}
         }
 
-        async function deleteDustbin(deviceId, row) {
-            try {
-                const response = await fetch(`/api/dustbins/delete/${deviceId}`, {
-                    method: 'DELETE'
-                });
+async function deleteSensorData(sensorId) {
+    if (confirm('Are you sure you want to delete this sensor data?')) {
+        try {
+            const response = await fetch(`/api/sensors/delete/${sensorId}`, {
+                method: 'DELETE'
+            });
 
-                if (response.ok) {
-                    // Remove the row from the table
-                    row.remove();
-                    console.log(`Dustbin with Device ID ${deviceId} deleted.`);
-                } else {
-                    console.error('Failed to delete dustbin.');
-                }
-            } catch (error) {
-                console.error('Error:', error);
+            const result = await response.json();
+            if (response.ok) {
+                alert(result.message);
+                fetchDustbinsAndSensors(); // Refresh the table
+            } else {
+                alert('Error: ' + result.message);
             }
+        } catch (error) {
+            console.error('Error:', error);
         }
+    }
+}
+
+        
 
         function convertToCSV(data) {
             const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
