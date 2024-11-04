@@ -186,7 +186,7 @@
         const deleteCell = document.createElement('td');
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'Delete';
-        deleteButton.onclick = () => deleteSensorData(sensor.ID); // Use sensor ID for deletion
+        deleteButton.onclick = () => deleteSensorData(sensor._id); // Use sensor ID for deletion
         deleteCell.appendChild(deleteButton);
         row.appendChild(deleteCell);
 
