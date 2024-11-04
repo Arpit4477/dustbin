@@ -293,7 +293,7 @@ app.delete('/api/dustbins/delete/:deviceId', async (req, res) => {
 });
 
 // Delete specific sensor data by its ID
-router.delete('/sensors/delete/:id', async (req, res) => {
+app.delete('/sensors/delete/:id', async (req, res) => {
     try {
         const sensorId = req.params.id;
         const deletedSensor = await SensorData.findByIdAndDelete(sensorId);
