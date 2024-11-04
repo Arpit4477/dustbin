@@ -272,8 +272,7 @@ app.delete('/api/sites/:siteId', async (req, res) => {
     }
 });
 
-// Import your Dustbin model (adjust the path as necessary)
-const Dustbin = require('./models/dustbin');
+
 
 // DELETE request to delete a dustbin by deviceId
 app.delete('/api/dustbins/delete/:deviceId', async (req, res) => {
