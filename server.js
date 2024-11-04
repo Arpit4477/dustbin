@@ -292,6 +292,22 @@ app.delete('/api/dustbins/delete/:deviceId', async (req, res) => {
     }
 });
 
+// Delete specific sensor data by its ID
+router.delete('/sensors/delete/:id', async (req, res) => {
+    try {
+        const sensorId = req.params.id;
+        const deletedSensor = await SensorData.findByIdAndDelete(sensorId);
+
+        if (!deletedSensor) {
+            return res.status(404).json({ message: 'Sensor data not found' });
+        }
+
+        res.status(200).json({ message: 'Sensor data deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error });
+    }
+});
+
 
 
 // Route to serve the admin page
