@@ -151,6 +151,8 @@
     const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
     const sensorData = await sensorResponse.json();
 
+    sensorData.reverse();
+
     sensorData.forEach(sensor => {
         const row = document.createElement('tr');
 
