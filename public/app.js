@@ -111,7 +111,9 @@ const applyFilters = () => {
 
 const getFillLevel = (dustbin) => {
     const sensorValues = [dustbin.sensor1, dustbin.sensor2];
+    console.log(`Sensor values for Dustbin ID: ${dustbin.deviceId}`, sensorValues);
     const maxSensorValue = Math.max(...sensorValues);
+    console.log(`Max sensor value: ${maxSensorValue}`);
     if (maxSensorValue > 20) {
         return '100%';
     } else if (maxSensorValue > 15) {
