@@ -81,6 +81,18 @@ background: url(/dustbinbg.jpg);
     position: relative;
 }
 
+.mainBg::before {
+  display: block;
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(to left, rgba(0, 0, 0, .01) 1%, rgb(255, 255, 255));
+  pointer-events: none;
+}
+
 .designImg{
 width:8%;
 }
