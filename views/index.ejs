@@ -68,8 +68,12 @@ body {
 
 .mainBg
 {
-background:
-url(/dustbinbg.jpg);
+background: url(/dustbinbg.jpg);
+    height: 500px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    position: relative;
 }
 
 .designImg{
@@ -144,10 +148,11 @@ width:8%;
     </style>
 </head>
 <body>
-<div class="mainBg"></div>
+<div class="mainBg">
 <div class="mainDesign">
 <img class="designImg" src="/dustbin.png">
 <h3>Map Test</h3>
+</div>
 </div>
     <nav>
         <a href="/">Home</a>
