@@ -152,6 +152,15 @@ app.get('/addSite', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/addSite.html');
 });
 
+app.get('/getSites', async (req, res) => {
+    try {
+        const sites = await Location.find(); // Replace with your DB query
+        res.json(sites);
+    } catch (error) {
+        res.status(500).send('Error fetching sites');
+    }
+});
+
 // Route to handle adding location
 app.post('/addSite', ensureAdmin, async (req, res) => {
     const { locationId } = req.body;
