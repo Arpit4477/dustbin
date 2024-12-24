@@ -8,10 +8,13 @@
         body {
             font-family: Arial, sans-serif;
             background-color: #f4f4f9;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
         }
 
         form {
@@ -20,7 +23,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             width: 300px;
-            margin: 20px auto;
+            margin-bottom: 20px;
         }
 
         form label {
@@ -30,7 +33,7 @@
         }
 
         form input[type="text"] {
-            width: calc(100% - 22px); /* Adjust width considering padding */
+            width: calc(100% - 22px);
             padding: 10px;
             margin-bottom: 16px;
             border: 1px solid #ccc;
@@ -53,7 +56,6 @@
             background-color: #4cae4c;
         }
 
-        /* Message styling */
         #message {
             margin-top: 20px;
             text-align: center;
@@ -67,6 +69,32 @@
         #message.error {
             color: red;
         }
+
+        #siteList {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        #siteList h2 {
+            margin-top: 0;
+        }
+
+        #siteList ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #siteList ul li {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #siteList ul li:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -79,17 +107,51 @@
     
     <div id="message"></div>
 
+    <div id="siteList">
+        <h2>Existing Sites</h2>
+        <ul id="siteListContainer">
+            <!-- Site list will be populated here -->
+        </ul>
+    </div>
+
     <script src="loadheader.js"></script>
     <script>
-        // Prevent the default form submission and handle via AJAX
+        async function fetchExistingSites() {
+            const siteListContainer = document.getElementById('siteListContainer');
+            siteListContainer.innerHTML = ''; // Clear the list
+
+            try {
+                const response = await fetch('/getSites'); // Endpoint to fetch sites
+                if (!response.ok) {
+                    throw new Error('Failed to fetch sites');
+                }
+
+                const sites = await response.json();
+                if (sites.length === 0) {
+                    siteListContainer.innerHTML = '<li>No sites available.</li>';
+                } else {
+                    sites.forEach(site => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = site.locationId;
+                        siteListContainer.appendChild(listItem);
+                    });
+                }
+            } catch (error) {
+                siteListContainer.innerHTML = `<li>Error: ${error.message}</li>`;
+            }
+        }
+
+        // Load existing sites on page load
+        window.addEventListener('load', fetchExistingSites);
+
+        // Handle form submission
         document.getElementById('addSiteForm').addEventListener('submit', async function(event) {
-            event.preventDefault(); // Prevent page refresh
+            event.preventDefault();
             
             const locationId = document.getElementById('locationId').value;
             const messageElement = document.getElementById('message');
 
             try {
-                // Make the POST request using Fetch API
                 const response = await fetch('/addSite', {
                     method: 'POST',
                     headers: {
@@ -98,16 +160,14 @@
                     body: JSON.stringify({ locationId: locationId }),
                 });
 
-                // Handle the response
                 const result = await response.text();
                 
                 if (response.ok) {
-                    // Success
                     messageElement.textContent = 'Location added successfully!';
                     messageElement.className = 'success';
                     document.getElementById('locationId').value = ''; // Clear the input
+                    fetchExistingSites(); // Refresh the site list
                 } else {
-                    // Check if the location already exists
                     if (result === 'Site already exists') {
                         messageElement.textContent = 'Failed to add location: Site already exists!';
                     } else {
@@ -116,7 +176,6 @@
                     messageElement.className = 'error';
                 }
             } catch (error) {
-                // Error during the fetch request
                 messageElement.textContent = 'An error occurred: ' + error.message;
                 messageElement.className = 'error';
             }
