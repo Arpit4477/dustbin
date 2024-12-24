@@ -67,6 +67,32 @@
         #message.error {
             color: red;
         }
+         #siteList {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+
+        #siteList h2 {
+            margin-top: 0;
+        }
+
+        #siteList ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #siteList ul li {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        #siteList ul li:last-child {
+            border-bottom: none;
+        }
+        
     </style>
 </head>
 <body>
@@ -88,6 +114,36 @@
 
     <script src="loadheader.js"></script>
     <script>
+
+        async function fetchExistingSites() {
+            const siteListContainer = document.getElementById('siteListContainer');
+            siteListContainer.innerHTML = ''; // Clear the list
+
+            try {
+                const response = await fetch('/getSites'); // Endpoint to fetch sites
+                if (!response.ok) {
+                    throw new Error('Failed to fetch sites');
+                }
+
+                const sites = await response.json();
+                if (sites.length === 0) {
+                    siteListContainer.innerHTML = '<li>No sites available.</li>';
+                } else {
+                    sites.forEach(site => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = site.locationId;
+                        siteListContainer.appendChild(listItem);
+                    });
+                }
+            } catch (error) {
+                siteListContainer.innerHTML = `<li>Error: ${error.message}</li>`;
+            }
+        }
+
+        // Load existing sites on page load
+        window.addEventListener('load', fetchExistingSites);
+
+        
         // Prevent the default form submission and handle via AJAX
         document.getElementById('addSiteForm').addEventListener('submit', async function(event) {
             event.preventDefault(); // Prevent page refresh
