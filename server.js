@@ -152,11 +152,16 @@ app.get('/addSite', ensureAdmin, (req, res) => {
     res.sendFile(__dirname + '/public/addSite.html');
 });
 
+// Route to get all sites
 app.get('/getSites', async (req, res) => {
     try {
-        const sites = await Location.find(); // Replace with your DB query
-        res.json(sites);
+        // Fetch all locations from the database
+        const locations = await Location.find();
+        
+        // Send the locations as JSON
+        res.json(locations);
     } catch (error) {
+        // Send error if something goes wrong
         res.status(500).send('Error fetching sites');
     }
 });
