@@ -115,7 +115,7 @@
                     document.getElementById('locationId').value = ''; // Clear the input
                 } else {
                     // Check if the location already exists
-                    if (result === 'Site already exists') {
+                    if (result === '400') {
                         messageElement.textContent = 'Failed to add location: Site already exists!';
                     } else {
                         messageElement.textContent = 'Failed to add location: ' + result;
