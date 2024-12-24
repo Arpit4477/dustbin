@@ -29,8 +29,8 @@ const createIcon = (iconUrl, labelText) => {
 
 const icons = {
     '100%': createIcon('dustbinFull.png', '100%'),
-    '75%': createIcon('dustbinFull.png', '75%'),
-    '50%': createIcon('dustbinEmpty.png', '50%'),
+    '75%': createIcon('dustbin75.png', '75%'),
+    '50%': createIcon('dustbin50.png', '50%'),
     '25%': createIcon('dustbinEmpty.png', '25%')
 };
 
