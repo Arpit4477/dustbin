@@ -138,6 +138,13 @@
                 
                 populateLocationFilter();
                 populateDeviceIdFilter();
+
+                // Restore filter values from localStorage
+                const savedLocation = localStorage.getItem('selectedLocation') || 'all';
+                const savedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+
+                document.getElementById('locationFilter').value = savedLocation;
+                document.getElementById('deviceIdFilter').value = savedDeviceId;
                 filterDustbinsByFilters();
             } catch (error) {
                 console.error('Error:', error);
@@ -171,6 +178,11 @@
         function filterDustbinsByFilters() {
     const selectedLocation = document.getElementById('locationFilter').value;
     const selectedDeviceId = document.getElementById('deviceIdFilter').value;
+
+    // Save filter values to localStorage
+    localStorage.setItem('selectedLocation', selectedLocation);
+    localStorage.setItem('selectedDeviceId', selectedDeviceId);
+
     const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
     tableBody.innerHTML = ''; // Clear previous rows
 
