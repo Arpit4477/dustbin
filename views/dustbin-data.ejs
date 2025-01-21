@@ -145,25 +145,44 @@
 }
 
         async function fetchDustbinsAndSensors() {
-            try {
-                const response = await fetch('/api/dustbins');
-                dustbins = await response.json();
-                
+    try {
+        const response = await fetch('/api/dustbins');
+        const newDustbins = await response.json();
+
+        // Check if dustbin data has changed to prevent unnecessary UI updates
+        if (JSON.stringify(dustbins) !== JSON.stringify(newDustbins)) {
+            dustbins = newDustbins;
+
+            // Update filters dynamically only if new locations or device IDs are found
+            const currentLocations = new Set([...document.getElementById('locationFilter').options].map(opt => opt.value));
+            const newLocations = [...new Set(dustbins.map(dustbin => dustbin.locationId))];
+
+            if (!newLocations.every(loc => currentLocations.has(loc))) {
                 populateLocationFilter();
+            }
+
+            const currentDeviceIds = new Set([...document.getElementById('deviceIdFilter').options].map(opt => opt.value));
+            const newDeviceIds = [...new Set(dustbins.map(dustbin => dustbin.deviceId))];
+
+            if (!newDeviceIds.every(id => currentDeviceIds.has(id))) {
                 populateDeviceIdFilter();
-
-                // Restore filter values from localStorage
-                const savedLocation = localStorage.getItem('selectedLocation') || 'all';
-                const savedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
-
-                document.getElementById('locationFilter').value = savedLocation;
-                document.getElementById('deviceIdFilter').value = savedDeviceId;
-                dustbins = newDustbins;
-                filterDustbinsByFilters();
-            } catch (error) {
-                console.error('Error:', error);
             }
         }
+
+        // Restore filter values from localStorage
+        const savedLocation = localStorage.getItem('selectedLocation') || 'all';
+        const savedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+
+        document.getElementById('locationFilter').value = savedLocation;
+        document.getElementById('deviceIdFilter').value = savedDeviceId;
+
+        // Dynamically filter and update the table
+        filterDustbinsByFilters();
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
 
         function populateLocationFilter() {
             const locationFilter = document.getElementById('locationFilter');
