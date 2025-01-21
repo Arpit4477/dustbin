@@ -98,6 +98,11 @@
             <option value="all">All Locations</option>
             <!-- Options will be populated dynamically -->
         </select>
+        <label for="deviceIdFilter">Filter by Device ID:</label>
+    <select id="deviceIdFilter" onchange="filterDustbinsByFilters()">
+        <option value="all">All Devices</option>
+        <!-- Options will be populated dynamically -->
+    </select>
     </div>
 
     <!-- Download CSV Button -->
@@ -132,7 +137,8 @@
                 dustbins = await response.json();
                 
                 populateLocationFilter();
-                filterDustbinsByLocation();
+                populateDeviceIdFilter();
+                filterDustbinsByFilters();
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -150,62 +156,80 @@
             });
         }
 
-        async function filterDustbinsByLocation() {
-            const selectedLocation = document.getElementById('locationFilter').value;
-            const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
-            tableBody.innerHTML = ''; // Clear previous rows
+        function populateDeviceIdFilter() {
+    const deviceIdFilter = document.getElementById('deviceIdFilter');
+    const uniqueDeviceIds = [...new Set(dustbins.map(dustbin => dustbin.deviceId))];
 
-            const filteredDustbins = selectedLocation === 'all' ? dustbins : dustbins.filter(dustbin => dustbin.locationId === selectedLocation);
-            
-            for (const dustbin of filteredDustbins) {
-    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-    const sensorData = await sensorResponse.json();
-
-    sensorData.reverse();
-
-    sensorData.forEach(sensor => {
-        const row = document.createElement('tr');
-
-        const locationIdCell = document.createElement('td');
-        locationIdCell.textContent = dustbin.locationId;
-        row.appendChild(locationIdCell);
-
-        const deviceIdCell = document.createElement('td');
-        deviceIdCell.textContent = dustbin.deviceId;
-        row.appendChild(deviceIdCell);
-
-        const sensor1Cell = document.createElement('td');
-        sensor1Cell.textContent = sensor.s1;
-        row.appendChild(sensor1Cell);
-
-        const sensor2Cell = document.createElement('td');
-        sensor2Cell.textContent = sensor.s2;
-        row.appendChild(sensor2Cell);
-
-        const batteryCell = document.createElement('td');
-        batteryCell.textContent = sensor.b;
-        row.appendChild(batteryCell);
-
-        const voltageCell = document.createElement('td');
-        voltageCell.textContent = sensor.v;
-        row.appendChild(voltageCell);
-
-        const updatedAtCell = document.createElement('td');
-        updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
-        row.appendChild(updatedAtCell);
-
-        // Add delete button
-        const deleteCell = document.createElement('td');
-        const deleteButton = document.createElement('button');
-        deleteButton.textContent = 'Delete';
-        deleteButton.onclick = () => deleteSensorData(sensor._id); // Use sensor ID for deletion
-        deleteCell.appendChild(deleteButton);
-        row.appendChild(deleteCell);
-
-        tableBody.appendChild(row);
+    uniqueDeviceIds.forEach(deviceId => {
+        const option = document.createElement('option');
+        option.value = deviceId;
+        option.textContent = `${deviceId}`;
+        deviceIdFilter.appendChild(option);
     });
 }
-        }
+
+        function filterDustbinsByFilters() {
+    const selectedLocation = document.getElementById('locationFilter').value;
+    const selectedDeviceId = document.getElementById('deviceIdFilter').value;
+    const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
+    tableBody.innerHTML = ''; // Clear previous rows
+
+    const filteredDustbins = dustbins.filter(dustbin => {
+        const matchesLocation = selectedLocation === 'all' || dustbin.locationId === selectedLocation;
+        const matchesDeviceId = selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId;
+        return matchesLocation && matchesDeviceId;
+    });
+
+    filteredDustbins.forEach(async dustbin => {
+        const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+        const sensorData = await sensorResponse.json();
+
+        sensorData.reverse();
+
+        sensorData.forEach(sensor => {
+            const row = document.createElement('tr');
+
+            const locationIdCell = document.createElement('td');
+            locationIdCell.textContent = dustbin.locationId;
+            row.appendChild(locationIdCell);
+
+            const deviceIdCell = document.createElement('td');
+            deviceIdCell.textContent = dustbin.deviceId;
+            row.appendChild(deviceIdCell);
+
+            const sensor1Cell = document.createElement('td');
+            sensor1Cell.textContent = sensor.s1;
+            row.appendChild(sensor1Cell);
+
+            const sensor2Cell = document.createElement('td');
+            sensor2Cell.textContent = sensor.s2;
+            row.appendChild(sensor2Cell);
+
+            const batteryCell = document.createElement('td');
+            batteryCell.textContent = sensor.b;
+            row.appendChild(batteryCell);
+
+            const voltageCell = document.createElement('td');
+            voltageCell.textContent = sensor.v;
+            row.appendChild(voltageCell);
+
+            const updatedAtCell = document.createElement('td');
+            updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
+            row.appendChild(updatedAtCell);
+
+            // Add delete button
+            const deleteCell = document.createElement('td');
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = () => deleteSensorData(sensor._id); // Use sensor ID for deletion
+            deleteCell.appendChild(deleteButton);
+            row.appendChild(deleteCell);
+
+            tableBody.appendChild(row);
+        });
+    });
+}
+
 
 async function deleteSensorData(sensorId) {
         try {
@@ -251,28 +275,35 @@ async function deleteSensorData(sensorId) {
         }
 
         async function downloadCSV() {
-            const selectedLocation = document.getElementById('locationFilter').value;
-            const filteredDustbins = selectedLocation === 'all' ? dustbins : dustbins.filter(dustbin => dustbin.locationId === selectedLocation);
-            const enrichedDustbins = [];
+    const selectedLocation = document.getElementById('locationFilter').value;
+    const selectedDeviceId = document.getElementById('deviceIdFilter').value;
 
-            for (const dustbin of filteredDustbins) {
-                const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-                const sensorData = await sensorResponse.json();
-                enrichedDustbins.push({ ...dustbin, sensors: sensorData });
-            }
+    const filteredDustbins = dustbins.filter(dustbin => {
+        const matchesLocation = selectedLocation === 'all' || dustbin.locationId === selectedLocation;
+        const matchesDeviceId = selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId;
+        return matchesLocation && matchesDeviceId;
+    });
 
-            const csvData = convertToCSV(enrichedDustbins);
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
+    const enrichedDustbins = [];
 
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'dustbins_data.csv';
+    for (const dustbin of filteredDustbins) {
+        const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+        const sensorData = await sensorResponse.json();
+        enrichedDustbins.push({ ...dustbin, sensors: sensorData });
+    }
 
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
+    const csvData = convertToCSV(enrichedDustbins);
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dustbins_data.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
         // Fetch and display dustbins and sensor data when page loads
         document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
