@@ -131,6 +131,19 @@
     <script>
         let dustbins = [];
 
+
+       document.addEventListener('DOMContentLoaded', () => {
+    fetchDustbinsAndSensors(); // Initial fetch
+    startAutoUpdate(10000); // Start auto-updating every 10 seconds
+});
+
+
+        function startAutoUpdate(interval = 10000) { // Update every 10 seconds by default
+    setInterval(async () => {
+        await fetchDustbinsAndSensors(); // Fetch and refresh the data
+    }, interval);
+}
+
         async function fetchDustbinsAndSensors() {
             try {
                 const response = await fetch('/api/dustbins');
@@ -145,6 +158,7 @@
 
                 document.getElementById('locationFilter').value = savedLocation;
                 document.getElementById('deviceIdFilter').value = savedDeviceId;
+                dustbins = newDustbins;
                 filterDustbinsByFilters();
             } catch (error) {
                 console.error('Error:', error);
