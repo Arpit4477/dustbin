@@ -135,8 +135,9 @@
                 if (JSON.stringify(dustbins) !== JSON.stringify(newDustbins)) {
                     dustbins = newDustbins;
                     updateFilters();
-                    filterDustbinsByFilters();
                 }
+
+                filterDustbinsByFilters();
             } catch (error) {
                 console.error('Error:', error);
             }
@@ -175,6 +176,7 @@
             const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
             const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
             const tableBody = document.querySelector('#dustbinsTable tbody');
+            tableBody.innerHTML = '';
 
             const filteredDustbins = dustbins.filter(d => 
                 (selectedLocation === 'all' || d.locationId === selectedLocation) &&
@@ -188,25 +190,20 @@
                 sensorData.reverse();
 
                 sensorData.forEach(sensor => {
-                    const existingRow = tableBody.querySelector(`tr[data-sensor-id="${sensor._id}"]`);
+                    const row = document.createElement('tr');
 
-                    if (!existingRow) {
-                        const row = document.createElement('tr');
-                        row.setAttribute('data-sensor-id', sensor._id);
+                    row.innerHTML = `
+                        <td>${dustbin.locationId}</td>
+                        <td>${dustbin.deviceId}</td>
+                        <td>${sensor.s1}</td>
+                        <td>${sensor.s2}</td>
+                        <td>${sensor.b}</td>
+                        <td>${sensor.v}</td>
+                        <td>${new Date(sensor.createdAt).toLocaleString()}</td>
+                        <td><button onclick="deleteSensorData('${sensor._id}')">Delete</button></td>
+                    `;
 
-                        row.innerHTML = `
-                            <td>${dustbin.locationId}</td>
-                            <td>${dustbin.deviceId}</td>
-                            <td>${sensor.s1}</td>
-                            <td>${sensor.s2}</td>
-                            <td>${sensor.b}</td>
-                            <td>${sensor.v}</td>
-                            <td>${new Date(sensor.createdAt).toLocaleString()}</td>
-                            <td><button onclick="deleteSensorData('${sensor._id}')">Delete</button></td>
-                        `;
-
-                        tableBody.appendChild(row);
-                    }
+                    tableBody.appendChild(row);
                 });
             }
         }
@@ -216,10 +213,7 @@
                 const response = await fetch(`/sensors/delete/${sensorId}`, { method: 'DELETE' });
 
                 if (response.ok) {
-                    const row = document.querySelector(`tr[data-sensor-id="${sensorId}"]`);
-                    if (row) {
-                        row.remove();
-                    }
+                    fetchDustbinsAndSensors();
                 } else {
                     alert('Error deleting sensor data.');
                 }
@@ -228,63 +222,64 @@
             }
         }
 
+
         async function downloadCSV() {
-            const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
-            const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+    const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
+    const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
 
-            const filteredDustbins = dustbins.filter(d =>
-                (selectedLocation === 'all' || d.locationId === selectedLocation) &&
-                (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
-            );
+    const filteredDustbins = dustbins.filter(d =>
+        (selectedLocation === 'all' || d.locationId === selectedLocation) &&
+        (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
+    );
 
-            const enrichedDustbins = [];
+    const enrichedDustbins = [];
 
-            for (const dustbin of filteredDustbins) {
-                try {
-                    const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-                    const sensorData = await sensorResponse.json();
-                    enrichedDustbins.push({ ...dustbin, sensors: sensorData });
-                } catch (error) {
-                    console.error(`Error fetching sensor data for ${dustbin.deviceId}:`, error);
-                }
-            }
-
-            const csvData = convertToCSV(enrichedDustbins);
-            const blob = new Blob([csvData], { type: 'text/csv' });
-            const url = URL.createObjectURL(blob);
-
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'dustbins_data.csv';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+    for (const dustbin of filteredDustbins) {
+        try {
+            const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+            const sensorData = await sensorResponse.json();
+            enrichedDustbins.push({ ...dustbin, sensors: sensorData });
+        } catch (error) {
+            console.error(`Error fetching sensor data for ${dustbin.deviceId}:`, error);
         }
+    }
 
-        function convertToCSV(data) {
-            const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
-            const csvRows = [];
+    const csvData = convertToCSV(enrichedDustbins);
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
 
-            csvRows.push(headers.join(',')); // Add headers to CSV file
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dustbins_data.csv';
 
-            data.forEach(dustbin => {
-                dustbin.sensors.forEach(sensor => {
-                    const row = [
-                        dustbin.locationId,
-                        dustbin.deviceId,
-                        sensor.s1,
-                        sensor.s2,
-                        sensor.b,
-                        sensor.v,
-                        new Date(sensor.createdAt).toLocaleString()
-                    ];
-                    csvRows.push(row.join(','));
-                });
-            });
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
 
-            return csvRows.join('\n');
-        }
+function convertToCSV(data) {
+    const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
+    const csvRows = [];
+
+    csvRows.push(headers.join(',')); // Add headers to CSV file
+
+    data.forEach(dustbin => {
+        dustbin.sensors.forEach(sensor => {
+            const row = [
+                dustbin.locationId,
+                dustbin.deviceId,
+                sensor.s1,
+                sensor.s2,
+                sensor.b,
+                sensor.v,
+                new Date(sensor.createdAt).toLocaleString()
+            ];
+            csvRows.push(row.join(','));
+        });
+    });
+
+    return csvRows.join('\n');
+}
 
         setInterval(fetchDustbinsAndSensors, 10000);
         document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
