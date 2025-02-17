@@ -129,10 +129,10 @@
 
         async function fetchDustbinsAndSensors() {
     try {
-        const response = await fetch('/api/dustbins');
+        const response = await fetch('/api/dustbin-data');
         const newDustbins = await response.json();
 
-        console.log("Fetched Dustbins:", newDustbins); // Debugging
+        console.log("Fetched Dustbins with Sensor Data:", newDustbins); // Debugging
 
         // If data is identical, do nothing (to prevent unnecessary updates)
         if (JSON.stringify(dustbins) === JSON.stringify(newDustbins)) {
@@ -189,31 +189,22 @@
         (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
     );
 
-    for (const dustbin of filteredDustbins) {
-        try {
-            const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
-            const sensorData = await sensorResponse.json();
-
-            sensorData.reverse(); // Show latest data first
-
-            sensorData.forEach(sensor => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${dustbin.locationId}</td>
-                    <td>${dustbin.deviceId}</td>
-                    <td>${sensor.s1}</td>
-                    <td>${sensor.s2}</td>
-                    <td>${sensor.b}</td>
-                    <td>${sensor.v}</td>
-                    <td>${new Date(sensor.createdAt).toLocaleString()}</td>
-                    <td><button onclick="deleteSensorData('${sensor._id}')">Delete</button></td>
-                `;
-                tableBody.appendChild(row);
-            });
-        } catch (error) {
-            console.error(`Error fetching sensor data for ${dustbin.deviceId}:`, error);
-        }
-    }
+    filteredDustbins.forEach(dustbin => {
+        dustbin.sensorData.forEach(sensor => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${dustbin.locationId}</td>
+                <td>${dustbin.deviceId}</td>
+                <td>${sensor.s1}</td>
+                <td>${sensor.s2}</td>
+                <td>${sensor.b}</td>
+                <td>${sensor.v}</td>
+                <td>${new Date(sensor.createdAt).toLocaleString()}</td>
+                <td><button onclick="deleteSensorData('${sensor._id}')">Delete</button></td>
+            `;
+            tableBody.appendChild(row);
+        });
+    });
 }
 
         async function deleteSensorData(sensorId) {
