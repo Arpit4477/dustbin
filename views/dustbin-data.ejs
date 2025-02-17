@@ -222,6 +222,65 @@
             }
         }
 
+
+        async function downloadCSV() {
+    const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
+    const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+
+    const filteredDustbins = dustbins.filter(d =>
+        (selectedLocation === 'all' || d.locationId === selectedLocation) &&
+        (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
+    );
+
+    const enrichedDustbins = [];
+
+    for (const dustbin of filteredDustbins) {
+        try {
+            const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+            const sensorData = await sensorResponse.json();
+            enrichedDustbins.push({ ...dustbin, sensors: sensorData });
+        } catch (error) {
+            console.error(`Error fetching sensor data for ${dustbin.deviceId}:`, error);
+        }
+    }
+
+    const csvData = convertToCSV(enrichedDustbins);
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'dustbins_data.csv';
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function convertToCSV(data) {
+    const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
+    const csvRows = [];
+
+    csvRows.push(headers.join(',')); // Add headers to CSV file
+
+    data.forEach(dustbin => {
+        dustbin.sensors.forEach(sensor => {
+            const row = [
+                dustbin.locationId,
+                dustbin.deviceId,
+                sensor.s1,
+                sensor.s2,
+                sensor.b,
+                sensor.v,
+                new Date(sensor.createdAt).toLocaleString()
+            ];
+            csvRows.push(row.join(','));
+        });
+    });
+
+    return csvRows.join('\n');
+}
+
         setInterval(fetchDustbinsAndSensors, 10000);
         document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
     </script>
