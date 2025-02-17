@@ -26,7 +26,7 @@
         select {
             padding: 5px;
             font-size: 16px;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         #download-btn {
@@ -36,7 +36,7 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         #download-btn:hover {
@@ -81,31 +81,29 @@
     <nav>
         <a href="/">Home</a>
         <% if (user.role === 'admin') { %>
-            <a href="/admin">Admin</a> <!-- Link to admin page -->
-            <a href="/register">Add User</a> <!-- Link to add a new user -->
+            <a href="/admin">Admin</a>
+            <a href="/register">Add User</a>
             <a href="/addSite">Add Site</a>
             <a href="/add">Add Dustbin</a>
         <% } %>
         <a href="/dustbin-data">Dustbin Data</a>
         <a href="/logout">Logout</a>
     </nav>
+    
     <h1>Your Dustbins and Sensor Data</h1>
     
-    <!-- Filter dropdown -->
     <div id="filter">
         <label for="locationFilter">Filter by Location:</label>
-        <select id="locationFilter" onchange="filterDustbinsByFilters()">
+        <select id="locationFilter" onchange="saveFiltersAndUpdate()">
             <option value="all">All Locations</option>
-            <!-- Options will be populated dynamically -->
         </select>
+
         <label for="deviceIdFilter">Filter by Device ID:</label>
-    <select id="deviceIdFilter" onchange="filterDustbinsByFilters()">
-        <option value="all">All Devices</option>
-        <!-- Options will be populated dynamically -->
-    </select>
+        <select id="deviceIdFilter" onchange="saveFiltersAndUpdate()">
+            <option value="all">All Devices</option>
+        </select>
     </div>
 
-    <!-- Download CSV Button -->
     <div id="download-container" style="text-align:center;">
         <button id="download-btn" onclick="downloadCSV()">Download CSV</button>
     </div>
@@ -123,236 +121,109 @@
                 <th>Actions</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- Data will be populated here -->
-        </tbody>
+        <tbody></tbody>
     </table>
 
     <script>
         let dustbins = [];
 
-
-       document.addEventListener('DOMContentLoaded', () => {
-    fetchDustbinsAndSensors(); // Initial fetch
-    startAutoUpdate(10000); // Start auto-updating every 10 seconds
-});
-
-
-        function startAutoUpdate(interval = 10000) { // Update every 10 seconds by default
-    setInterval(async () => {
-        await fetchDustbinsAndSensors(); // Fetch and refresh the data
-    }, interval);
-}
-
         async function fetchDustbinsAndSensors() {
-    try {
-        const response = await fetch('/api/dustbins');
-        const newDustbins = await response.json();
+            try {
+                const response = await fetch('/api/dustbins');
+                const newDustbins = await response.json();
 
-        // Check if dustbin data has changed to prevent unnecessary UI updates
-        if (JSON.stringify(dustbins) !== JSON.stringify(newDustbins)) {
-            dustbins = newDustbins;
+                if (JSON.stringify(dustbins) !== JSON.stringify(newDustbins)) {
+                    dustbins = newDustbins;
+                    updateFilters();
+                }
 
-            // Update filters dynamically only if new locations or device IDs are found
-            const currentLocations = new Set([...document.getElementById('locationFilter').options].map(opt => opt.value));
-            const newLocations = [...new Set(dustbins.map(dustbin => dustbin.locationId))];
-
-            if (!newLocations.every(loc => currentLocations.has(loc))) {
-                populateLocationFilter();
-            }
-
-            const currentDeviceIds = new Set([...document.getElementById('deviceIdFilter').options].map(opt => opt.value));
-            const newDeviceIds = [...new Set(dustbins.map(dustbin => dustbin.deviceId))];
-
-            if (!newDeviceIds.every(id => currentDeviceIds.has(id))) {
-                populateDeviceIdFilter();
+                filterDustbinsByFilters();
+            } catch (error) {
+                console.error('Error:', error);
             }
         }
 
-        // Restore filter values from localStorage
-        const savedLocation = localStorage.getItem('selectedLocation') || 'all';
-        const savedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+        function updateFilters() {
+            populateFilter('locationFilter', [...new Set(dustbins.map(d => d.locationId))]);
+            populateFilter('deviceIdFilter', [...new Set(dustbins.map(d => d.deviceId))]);
 
-        document.getElementById('locationFilter').value = savedLocation;
-        document.getElementById('deviceIdFilter').value = savedDeviceId;
-
-        // Dynamically filter and update the table
-        filterDustbinsByFilters();
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-
-        function populateLocationFilter() {
-            const locationFilter = document.getElementById('locationFilter');
-            const uniqueLocations = [...new Set(dustbins.map(dustbin => dustbin.locationId))];
-
-            uniqueLocations.forEach(location => {
-                const option = document.createElement('option');
-                option.value = location;
-                option.textContent = ${location};
-                locationFilter.appendChild(option);
-            });
+            document.getElementById('locationFilter').value = localStorage.getItem('selectedLocation') || 'all';
+            document.getElementById('deviceIdFilter').value = localStorage.getItem('selectedDeviceId') || 'all';
         }
 
-        function populateDeviceIdFilter() {
-    const deviceIdFilter = document.getElementById('deviceIdFilter');
-    const uniqueDeviceIds = [...new Set(dustbins.map(dustbin => dustbin.deviceId))];
+        function populateFilter(filterId, options) {
+            const filterElement = document.getElementById(filterId);
+            const currentOptions = new Set([...filterElement.options].map(opt => opt.value));
 
-    uniqueDeviceIds.forEach(deviceId => {
-        const option = document.createElement('option');
-        option.value = deviceId;
-        option.textContent = ${deviceId};
-        deviceIdFilter.appendChild(option);
-    });
-}
-
-        function filterDustbinsByFilters() {
-    const selectedLocation = document.getElementById('locationFilter').value;
-    const selectedDeviceId = document.getElementById('deviceIdFilter').value;
-
-    // Save filter values to localStorage
-    localStorage.setItem('selectedLocation', selectedLocation);
-    localStorage.setItem('selectedDeviceId', selectedDeviceId);
-
-    const tableBody = document.getElementById('dustbinsTable').getElementsByTagName('tbody')[0];
-    tableBody.innerHTML = ''; // Clear previous rows
-
-    const filteredDustbins = dustbins.filter(dustbin => {
-        const matchesLocation = selectedLocation === 'all' || dustbin.locationId === selectedLocation;
-        const matchesDeviceId = selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId;
-        return matchesLocation && matchesDeviceId;
-    });
-
-    filteredDustbins.forEach(async dustbin => {
-        const sensorResponse = await fetch(/api/sensors/all/${dustbin.deviceId});
-        const sensorData = await sensorResponse.json();
-
-        sensorData.reverse();
-
-        sensorData.forEach(sensor => {
-            const row = document.createElement('tr');
-
-            const locationIdCell = document.createElement('td');
-            locationIdCell.textContent = dustbin.locationId;
-            row.appendChild(locationIdCell);
-
-            const deviceIdCell = document.createElement('td');
-            deviceIdCell.textContent = dustbin.deviceId;
-            row.appendChild(deviceIdCell);
-
-            const sensor1Cell = document.createElement('td');
-            sensor1Cell.textContent = sensor.s1;
-            row.appendChild(sensor1Cell);
-
-            const sensor2Cell = document.createElement('td');
-            sensor2Cell.textContent = sensor.s2;
-            row.appendChild(sensor2Cell);
-
-            const batteryCell = document.createElement('td');
-            batteryCell.textContent = sensor.b;
-            row.appendChild(batteryCell);
-
-            const voltageCell = document.createElement('td');
-            voltageCell.textContent = sensor.v;
-            row.appendChild(voltageCell);
-
-            const updatedAtCell = document.createElement('td');
-            updatedAtCell.textContent = new Date(sensor.createdAt).toLocaleString();
-            row.appendChild(updatedAtCell);
-
-            // Add delete button
-            const deleteCell = document.createElement('td');
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'Delete';
-            deleteButton.onclick = () => deleteSensorData(sensor._id); // Use sensor ID for deletion
-            deleteCell.appendChild(deleteButton);
-            row.appendChild(deleteCell);
-
-            tableBody.appendChild(row);
-        });
-    });
-}
-
-
-async function deleteSensorData(sensorId) {
-        try {
-            const response = await fetch(/sensors/delete/${sensorId}, {
-                method: 'DELETE'
-            });
-
-            const result = await response.json();
-            if (response.ok) {
-                fetchDustbinsAndSensors(); // Refresh the table
-            } else {
-                alert('Error: ' + result.message);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-        }
-}
-
-        
-
-        function convertToCSV(data) {
-            const headers = ['Location ID', 'Device ID', 'Sensor 1', 'Sensor 2', 'Battery', 'Voltage', 'Last Updated'];
-            const csvRows = [];
-
-            csvRows.push(headers.join(',')); // Add headers to the CSV file
-
-            data.forEach(dustbin => {
-                dustbin.sensors.forEach(sensor => {
-                    const row = [
-                        dustbin.locationId,
-                        dustbin.deviceId,
-                        sensor.s1,
-                        sensor.s2,
-                        sensor.b,
-                        sensor.v,
-                        new Date(sensor.createdAt).toLocaleString()
-                    ];
-                    csvRows.push(row.join(','));
+            if (!options.every(opt => currentOptions.has(opt))) {
+                filterElement.innerHTML = '<option value="all">All</option>';
+                options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.textContent = opt;
+                    filterElement.appendChild(option);
                 });
-            });
-
-            return csvRows.join('\n');
+            }
         }
 
-        async function downloadCSV() {
-    const selectedLocation = document.getElementById('locationFilter').value;
-    const selectedDeviceId = document.getElementById('deviceIdFilter').value;
+        function saveFiltersAndUpdate() {
+            localStorage.setItem('selectedLocation', document.getElementById('locationFilter').value);
+            localStorage.setItem('selectedDeviceId', document.getElementById('deviceIdFilter').value);
+            filterDustbinsByFilters();
+        }
 
-    const filteredDustbins = dustbins.filter(dustbin => {
-        const matchesLocation = selectedLocation === 'all' || dustbin.locationId === selectedLocation;
-        const matchesDeviceId = selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId;
-        return matchesLocation && matchesDeviceId;
-    });
+        async function filterDustbinsByFilters() {
+            const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
+            const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+            const tableBody = document.querySelector('#dustbinsTable tbody');
+            tableBody.innerHTML = '';
 
-    const enrichedDustbins = [];
+            const filteredDustbins = dustbins.filter(d => 
+                (selectedLocation === 'all' || d.locationId === selectedLocation) &&
+                (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
+            );
 
-    for (const dustbin of filteredDustbins) {
-        const sensorResponse = await fetch(/api/sensors/all/${dustbin.deviceId});
-        const sensorData = await sensorResponse.json();
-        enrichedDustbins.push({ ...dustbin, sensors: sensorData });
-    }
+            for (const dustbin of filteredDustbins) {
+                const sensorResponse = await fetch(`/api/sensors/all/${dustbin.deviceId}`);
+                const sensorData = await sensorResponse.json();
 
-    const csvData = convertToCSV(enrichedDustbins);
-    const blob = new Blob([csvData], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
+                sensorData.reverse();
 
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'dustbins_data.csv';
+                sensorData.forEach(sensor => {
+                    const row = document.createElement('tr');
 
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+                    row.innerHTML = `
+                        <td>${dustbin.locationId}</td>
+                        <td>${dustbin.deviceId}</td>
+                        <td>${sensor.s1}</td>
+                        <td>${sensor.s2}</td>
+                        <td>${sensor.b}</td>
+                        <td>${sensor.v}</td>
+                        <td>${new Date(sensor.createdAt).toLocaleString()}</td>
+                        <td><button onclick="deleteSensorData('${sensor._id}')">Delete</button></td>
+                    `;
 
-        // Fetch and display dustbins and sensor data when page loads
+                    tableBody.appendChild(row);
+                });
+            }
+        }
+
+        async function deleteSensorData(sensorId) {
+            try {
+                const response = await fetch(`/sensors/delete/${sensorId}`, { method: 'DELETE' });
+
+                if (response.ok) {
+                    fetchDustbinsAndSensors();
+                } else {
+                    alert('Error deleting sensor data.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        setInterval(fetchDustbinsAndSensors, 10000);
         document.addEventListener('DOMContentLoaded', fetchDustbinsAndSensors);
     </script>
-    <script src="loadheader.js"></script>
 </body>
 </html>
