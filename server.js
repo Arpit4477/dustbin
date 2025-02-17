@@ -358,6 +358,30 @@ app.get('/api/dustbin-status', ensureAuthenticated, async (req, res) => {
     }
 });
 
+// New endpoint to get dustbin data with sensor data
+app.get('/api/dustbin-data', ensureAuthenticated, async (req, res) => {
+    try {
+        const user = req.user;
+        const dustbins = await Dustbin.find({ locationId: { $in: user.locationIds } });
+
+        // Fetch sensor data for each dustbin
+        const dustbinData = await Promise.all(
+            dustbins.map(async (dustbin) => {
+                const sensorData = await SensorData.find({ ID: dustbin.deviceId }).sort({ createdAt: -1 }); // Fetch all sensor data for the dustbin
+                return {
+                    ...dustbin.toObject(), // Include dustbin details
+                    sensorData, // Include sensor data
+                };
+            })
+        );
+
+        res.json(dustbinData);
+    } catch (error) {
+        console.error('Error fetching dustbin data:', error);
+        res.status(500).json({ error: 'Failed to fetch dustbin data' });
+    }
+});
+
 
 
 
