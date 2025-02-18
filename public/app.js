@@ -1,4 +1,11 @@
-const map = L.map('map').setView([0, 0], 2); // Set a default view that will be updated
+const map = L.map('map', {
+    minZoom: 2, // Prevent zooming out too much
+    maxBounds: [
+        [-90, -180], // Southwest corner
+        [90, 180]    // Northeast corner
+    ],
+    maxBoundsViscosity: 1.0 // Ensures map stays within bounds
+}).setView([0, 0], 2);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
