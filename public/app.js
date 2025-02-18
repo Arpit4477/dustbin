@@ -1,8 +1,10 @@
 const map = L.map('map', {
-    minZoom: 1.5, // Prevent zooming out too much
+    minZoom: 2, // Prevent excessive zooming out
+    maxZoom: 18, // Optional: Prevent excessive zooming in
+    worldCopyJump: false, // Prevents map from repeating
     maxBounds: [
-        [-90, -180], // Southwest corner
-        [90, 180]    // Northeast corner
+        [-85, -180], // Southwest corner (near Antarctica)
+        [85, 180]    // Northeast corner (near Arctic)
     ],
     maxBoundsViscosity: 1.0 // Ensures map stays within bounds
 }).setView([0, 0], 2);
