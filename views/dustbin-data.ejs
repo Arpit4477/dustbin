@@ -184,11 +184,13 @@
 
     console.log("Applying Filters - Location:", selectedLocation, "Device ID:", selectedDeviceId); // Debugging
 
-    const filteredDustbins = dustbins.filter(d => 
-        (selectedLocation === 'all' || d.locationId === selectedLocation) &&
-        (selectedDeviceId === 'all' || d.deviceId === selectedDeviceId)
+    // Filter dustbins based on location and device ID
+    const filteredDustbins = dustbins.filter(dustbin => 
+        (selectedLocation === 'all' || dustbin.locationId === selectedLocation) &&
+        (selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId)
     );
 
+    // Populate the table with filtered data
     filteredDustbins.forEach(dustbin => {
         dustbin.sensorData.forEach(sensor => {
             const row = document.createElement('tr');
