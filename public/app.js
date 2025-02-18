@@ -1,8 +1,8 @@
 const map = L.map('map', {
     minZoom: 2, // Prevent zooming out too much
     maxBounds: [
-        [-90, -180], // Southwest corner
-        [90, 180]    // Northeast corner
+        [-60, -150], // Southwest corner
+        [60, 150]    // Northeast corner
     ],
     maxBoundsViscosity: 1.0 // Ensures map stays within bounds
 }).setView([0, 0], 2);
