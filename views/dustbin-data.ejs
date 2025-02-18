@@ -141,34 +141,41 @@
         }
 
         dustbins = newDustbins; // Update dustbins array
-        filterDustbinsByFilters(); // Refresh only the table
+        updateFilters(); // Update dropdown options
+        filterDustbinsByFilters(); // Refresh the table
     } catch (error) {
         console.error('Error fetching dustbins:', error);
     }
 }
 
         function updateFilters() {
-            populateFilter('locationFilter', [...new Set(dustbins.map(d => d.locationId))]);
-            populateFilter('deviceIdFilter', [...new Set(dustbins.map(d => d.deviceId))]);
+    // Extract unique location IDs from the dustbins array
+    const uniqueLocations = [...new Set(dustbins.map(d => d.locationId))];
+    populateFilter('locationFilter', uniqueLocations);
 
-            document.getElementById('locationFilter').value = localStorage.getItem('selectedLocation') || 'all';
-            document.getElementById('deviceIdFilter').value = localStorage.getItem('selectedDeviceId') || 'all';
-        }
+    // Extract unique device IDs from the dustbins array
+    const uniqueDeviceIds = [...new Set(dustbins.map(d => d.deviceId))];
+    populateFilter('deviceIdFilter', uniqueDeviceIds);
+
+    // Restore selected filters from localStorage
+    document.getElementById('locationFilter').value = localStorage.getItem('selectedLocation') || 'all';
+    document.getElementById('deviceIdFilter').value = localStorage.getItem('selectedDeviceId') || 'all';
+}
 
         function populateFilter(filterId, options) {
-            const filterElement = document.getElementById(filterId);
-            const currentOptions = new Set([...filterElement.options].map(opt => opt.value));
+    const filterElement = document.getElementById(filterId);
 
-            if (!options.every(opt => currentOptions.has(opt))) {
-                filterElement.innerHTML = '<option value="all">All</option>';
-                options.forEach(opt => {
-                    const option = document.createElement('option');
-                    option.value = opt;
-                    option.textContent = opt;
-                    filterElement.appendChild(option);
-                });
-            }
-        }
+    // Clear existing options (except the first "All" option)
+    filterElement.innerHTML = '<option value="all">All</option>';
+
+    // Add new options
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        filterElement.appendChild(option);
+    });
+}
 
         function saveFiltersAndUpdate() {
             localStorage.setItem('selectedLocation', document.getElementById('locationFilter').value);
