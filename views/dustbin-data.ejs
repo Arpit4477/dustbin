@@ -189,16 +189,26 @@
             const graphsContainer = document.getElementById('graphs-container');
             graphsContainer.innerHTML = ''; // Clear previous graphs
 
+            // Get selected filters
+            const selectedLocation = localStorage.getItem('selectedLocation') || 'all';
+            const selectedDeviceId = localStorage.getItem('selectedDeviceId') || 'all';
+
+            // Filter dustbins based on selected filters
+            const filteredDustbins = dustbins.filter(dustbin =>
+                (selectedLocation === 'all' || dustbin.locationId === selectedLocation) &&
+                (selectedDeviceId === 'all' || dustbin.deviceId === selectedDeviceId)
+            );
+
             // Group sensor data by deviceId
             const dataByDevice = {};
-            dustbins.forEach(dustbin => {
+            filteredDustbins.forEach(dustbin => {
                 if (!dataByDevice[dustbin.deviceId]) {
                     dataByDevice[dustbin.deviceId] = [];
                 }
                 dataByDevice[dustbin.deviceId].push(...dustbin.sensorData);
             });
 
-            // Render graphs for each device
+            // Render graphs for each filtered device
             Object.keys(dataByDevice).forEach(deviceId => {
                 const deviceData = dataByDevice[deviceId];
                 const labels = deviceData.map(sensor => new Date(sensor.createdAt).toLocaleString());
