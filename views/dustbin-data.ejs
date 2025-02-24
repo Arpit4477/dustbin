@@ -76,10 +76,33 @@
             background-color: #c82333;
         }
 /* New styles for the graph section */
-        #graph-section {
+      /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
             width: 80%;
-            margin: 20px auto;
-            text-align: center;
+            max-width: 1000px;
+            max-height: 80%;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+            font-size: 24px;
         }
 
         .graph-container {
@@ -137,114 +160,131 @@
         <tbody></tbody>
     </table>
 
-<div id="graph-section" style="display: none;">
-        <h2>Data Analysis</h2>
-        <div class="graph-container">
-            <canvas id="sensor1Chart"></canvas>
-        </div>
-        <div class="graph-container">
-            <canvas id="sensor2Chart"></canvas>
-        </div>
-        <div class="graph-container">
-            <canvas id="batteryChart"></canvas>
+ <!-- Modal for Graphs -->
+    <div id="graph-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h2>Data Analysis</h2>
+            <div id="graphs-container"></div>
         </div>
     </div>
 
     <script>
        let dustbins = [];
-        let sensor1Chart, sensor2Chart, batteryChart;
-
-        // Function to show/hide the graph section
+        // Function to show the modal
         function showGraphs() {
-            const graphSection = document.getElementById('graph-section');
-            graphSection.style.display = graphSection.style.display === 'none' ? 'block' : 'none';
-
-            if (graphSection.style.display === 'block') {
-                renderGraphs();
-            }
+            const modal = document.getElementById('graph-modal');
+            modal.style.display = 'flex';
+            renderGraphs();
         }
 
-        // Function to render graphs
+        // Function to close the modal
+        function closeModal() {
+            const modal = document.getElementById('graph-modal');
+            modal.style.display = 'none';
+        }
+
+        // Function to render graphs for each device
         function renderGraphs() {
-            const sensor1Data = dustbins.flatMap(dustbin => dustbin.sensorData.map(sensor => sensor.s1));
-            const sensor2Data = dustbins.flatMap(dustbin => dustbin.sensorData.map(sensor => sensor.s2));
-            const batteryData = dustbins.flatMap(dustbin => dustbin.sensorData.map(sensor => sensor.b));
-            const labels = dustbins.flatMap(dustbin => dustbin.sensorData.map(sensor => new Date(sensor.createdAt).toLocaleString()));
+            const graphsContainer = document.getElementById('graphs-container');
+            graphsContainer.innerHTML = ''; // Clear previous graphs
 
-            // Destroy existing charts if they exist
-            if (sensor1Chart) sensor1Chart.destroy();
-            if (sensor2Chart) sensor2Chart.destroy();
-            if (batteryChart) batteryChart.destroy();
-
-            // Render Sensor 1 Chart
-            const sensor1Ctx = document.getElementById('sensor1Chart').getContext('2d');
-            sensor1Chart = new Chart(sensor1Ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sensor 1',
-                        data: sensor1Data,
-                        borderColor: 'rgba(255, 99, 132, 1)',
-                        borderWidth: 2,
-                        fill: false,
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        }
-                    }
+            // Group sensor data by deviceId
+            const dataByDevice = {};
+            dustbins.forEach(dustbin => {
+                if (!dataByDevice[dustbin.deviceId]) {
+                    dataByDevice[dustbin.deviceId] = [];
                 }
+                dataByDevice[dustbin.deviceId].push(...dustbin.sensorData);
             });
 
-            // Render Sensor 2 Chart
-            const sensor2Ctx = document.getElementById('sensor2Chart').getContext('2d');
-            sensor2Chart = new Chart(sensor2Ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Sensor 2',
-                        data: sensor2Data,
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 2,
-                        fill: false,
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        }
-                    }
-                }
-            });
+            // Render graphs for each device
+            Object.keys(dataByDevice).forEach(deviceId => {
+                const deviceData = dataByDevice[deviceId];
+                const labels = deviceData.map(sensor => new Date(sensor.createdAt).toLocaleString());
+                const sensor1Data = deviceData.map(sensor => sensor.s1);
+                const sensor2Data = deviceData.map(sensor => sensor.s2);
+                const batteryData = deviceData.map(sensor => sensor.b);
 
-            // Render Battery Chart
-            const batteryCtx = document.getElementById('batteryChart').getContext('2d');
-            batteryChart = new Chart(batteryCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Battery',
-                        data: batteryData,
-                        borderColor: 'rgba(75, 192, 192, 1)',
-                        borderWidth: 2,
-                        fill: false,
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
+                // Create a container for the device's graphs
+                const deviceContainer = document.createElement('div');
+                deviceContainer.innerHTML = `<h3>Device ID: ${deviceId}</h3>`;
+                graphsContainer.appendChild(deviceContainer);
+
+                // Render Sensor 1 Chart
+                const sensor1Canvas = document.createElement('canvas');
+                deviceContainer.appendChild(sensor1Canvas);
+                new Chart(sensor1Canvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sensor 1',
+                            data: sensor1Data,
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 2,
+                            fill: false,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                            }
                         }
                     }
-                }
+                });
+
+                // Render Sensor 2 Chart
+                const sensor2Canvas = document.createElement('canvas');
+                deviceContainer.appendChild(sensor2Canvas);
+                new Chart(sensor2Canvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Sensor 2',
+                            data: sensor2Data,
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 2,
+                            fill: false,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                            }
+                        }
+                    }
+                });
+
+                // Render Battery Chart
+                const batteryCanvas = document.createElement('canvas');
+                deviceContainer.appendChild(batteryCanvas);
+                new Chart(batteryCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Battery',
+                            data: batteryData,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 2,
+                            fill: false,
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                            }
+                        }
+                    }
+                });
             });
         }
+
 
         async function fetchDustbinsAndSensors() {
     try {
