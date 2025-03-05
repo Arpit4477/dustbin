@@ -4,116 +4,136 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Map with Dustbins</title>
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="app.js" defer></script>
     <style>
-        nav {
-            background-color: #ffffff;
-            color: white;
-            padding: 18px 0;
-            text-align: center;
-        }
-        nav a {
-            padding: 1rem 2rem 1.15rem;
-  text-transform: uppercase;
-  cursor: pointer;
-  color: #1f1f1f;
-	min-width: 80px;
-	margin: auto;
-text-decoration: none;
-        }
-        
-a:hover {
-  background-image: url('https://scottyzen.sirv.com/Images/v/button.png');
-  background-size: 100% 100%;
-  color: #27262c;
-  animation: spring 300ms ease-out;
-  text-shadow: 0 -1px 0 #ef816c;
-	font-weight: bold;
-}
-a:active {
-  transform: translateY(4px);
-}
-
-@keyframes spring {
-  15% {
-    -webkit-transform-origin: center center;
-    -webkit-transform: scale(1.2, 1.1);
-  }
-  40% {
-    -webkit-transform-origin: center center;
-    -webkit-transform: scale(0.95, 0.95);
-  }
-  75% {
-    -webkit-transform-origin: center center;
-    -webkit-transform: scale(1.05, 1);
-  }
-  100% {
-    -webkit-transform-origin: center center;
-    -webkit-transform: scale(1, 1);
-  }
-}
-
-body {
-            font-family: 'Arial', sans-serif;
-            background-color: #f5f5f5;
+        /* General Styles */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f9f9f9;
             margin: 0;
             padding: 0;
+            color: #333;
+            line-height: 1.6;
         }
-.mainDesign{
-    text-align: -webkit-center;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-}
 
-.mainBg
-{
-background: url(/dustbinbg.jpg);
-    height: 500px;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    position: relative;
-}
-
-.mainBg::before {
-  display: block;
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(to bottom, rgba(0, 0, 0, .01) -4%, rgb(255, 255, 255));
-    pointer-events: none;
-}
-.mainText{
-color: #1f1f1f;
-}
-
-.designImg{
-width:15%;
-}
+        h1, h2, h3 {
+            margin: 0;
+            font-weight: 600;
+        }
 
         h1 {
-            text-align: center;
-            color: #333;
-            margin-top: 20px;
+            font-size: 2.5rem;
+            color: #2c3e50;
         }
 
+        h2 {
+            font-size: 2rem;
+            color: #34495e;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #7f8c8d;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Navigation Bar */
+        nav {
+            background-color: #2c3e50;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        nav a {
+            padding: 0.75rem 1.5rem;
+            color: #ecf0f1;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        nav a:hover {
+            background-color: #34495e;
+            color: #ffffff;
+        }
+
+        /* Hero Section */
+        .mainBg {
+            background: url('/dustbinbg.jpg');
+            height: 500px;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .mainBg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+            pointer-events: none;
+        }
+
+        .mainDesign {
+            z-index: 1;
+            color: white;
+        }
+
+        .designImg {
+            width: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .mainText {
+            margin: 0.5rem 0;
+        }
+
+        .mapButton {
+            padding: 0.75rem 2rem;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .mapButton:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .mapButton:active {
+            transform: translateY(0);
+        }
+
+        /* Filter Section */
         .filter-container {
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 20px;
             padding: 20px;
-            background-color: #fff;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             margin: 20px auto;
             border-radius: 8px;
             max-width: 800px;
@@ -121,7 +141,7 @@ width:15%;
 
         label {
             font-size: 14px;
-            font-weight: bold;
+            font-weight: 600;
             color: #333;
         }
 
@@ -135,12 +155,12 @@ width:15%;
         }
 
         select:focus {
-            border-color: #007bff;
+            border-color: #3498db;
         }
 
         button {
             padding: 10px 20px;
-            background-color: #007bff;
+            background-color: #3498db;
             color: white;
             border: none;
             border-radius: 4px;
@@ -150,43 +170,74 @@ width:15%;
         }
 
         button:hover {
-            background-color: #0056b3;
-            transform: scale(1.05);
+            background-color: #2980b9;
+            transform: translateY(-2px);
         }
 
         button:active {
-            transform: scale(0.98);
+            transform: translateY(0);
         }
 
+        /* Map Section */
+        #map {
+            height: 600px;
+            margin: 20px auto;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Responsive Design */
         @media (max-width: 768px) {
             .filter-container {
                 flex-direction: column;
                 gap: 15px;
                 padding: 15px;
             }
+
+            nav a {
+                display: block;
+                margin: 0.5rem 0;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            h2 {
+                font-size: 1.75rem;
+            }
+
+            h3 {
+                font-size: 1.25rem;
+            }
         }
     </style>
 </head>
 <body>
-<div class="mainBg">
-<div class="mainDesign">
-<img class="designImg" src="/dustbin.png">
-<h2 class="mainText">Hello</h2>
-<h3 class="mainText">Welcome to the Dustbin Portal</h3>
-<button class="mapButton">Click here to go to Maps</button>
-</div>
-</div>
+    <!-- Hero Section -->
+    <div class="mainBg">
+        <div class="mainDesign">
+            <img class="designImg" src="/dustbin.png" alt="Dustbin Icon">
+            <h2 class="mainText">Hello</h2>
+            <h3 class="mainText">Welcome to the Dustbin Portal</h3>
+            <button class="mapButton">Click here to go to Maps</button>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
     <nav>
         <a href="/">Home</a>
         <% if (user.role === 'admin') { %>
-            <a href="/admin">Admin</a> <!-- Link to admin page -->
-            <a href="/register">Add User</a> <!-- Link to add a new user -->
+            <a href="/admin">Admin</a>
+            <a href="/register">Add User</a>
             <a href="/addSite">Add Site</a>
             <a href="/add">Add Dustbin</a>
         <% } %>
         <a href="/dustbin-data">Dustbin Data</a>
         <a href="/logout">Logout</a>
     </nav>
+
+    <!-- Main Content -->
     <h1>Dustbin Sites</h1>
     <div class="filter-container">
         <label for="locationFilter">Filter by Site:</label>
@@ -208,18 +259,18 @@ width:15%;
         <button id="applyFilters">Apply Filters</button>
     </div>
 
-    <div id="map" style="height: 600px;"></div>
+    <!-- Map Section -->
+    <div id="map"></div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const mapButton = document.querySelector('.mapButton');
-        const mapSection = document.getElementById('map');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mapButton = document.querySelector('.mapButton');
+            const mapSection = document.getElementById('map');
 
-        mapButton.addEventListener('click', () => {
-            mapSection.scrollIntoView({ behavior: 'smooth' });
+            mapButton.addEventListener('click', () => {
+                mapSection.scrollIntoView({ behavior: 'smooth' });
+            });
         });
-    });
-</script>
-
+    </script>
 </body>
 </html>
