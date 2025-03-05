@@ -1,49 +1,23 @@
 /* styles.css */
-nav {
-    background-color: #000000;
-    color: white;
-    padding: 18px 0;
-    text-align: center;
-}
+/* Navigation Bar */
+        nav {
+            background-color: #2c3e50;
+            padding: 1rem 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
 
-nav a {
-    padding: 1rem 2rem 1.15rem;
-    text-transform: uppercase;
-    cursor: pointer;
-    color: #ebebeb;
-    min-width: 80px;
-    margin: auto;
-    text-decoration: none;
-}
+        nav a {
+            padding: 0.75rem 1.5rem;
+            color: #ecf0f1;
+            font-weight: 500;
+            text-transform: uppercase;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.3s, color 0.3s;
+        }
 
-nav a:hover {
-    background-image: url('https://scottyzen.sirv.com/Images/v/button.png');
-    background-size: 100% 100%;
-    color: #27262c;
-    animation: spring 300ms ease-out;
-    text-shadow: 0 -1px 0 #ef816c;
-    font-weight: bold;
-}
-
-nav a:active {
-    transform: translateY(4px);
-}
-
-@keyframes spring {
-    15% {
-        transform-origin: center center;
-        transform: scale(1.2, 1.1);
-    }
-    40% {
-        transform-origin: center center;
-        transform: scale(0.95, 0.95);
-    }
-    75% {
-        transform-origin: center center;
-        transform: scale(1.05, 1);
-    }
-    100% {
-        transform-origin: center center;
-        transform: scale(1, 1);
-    }
-}
+        nav a:hover {
+            background-color: #34495e;
+            color: #ffffff;
+        }
