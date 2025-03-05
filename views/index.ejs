@@ -67,42 +67,44 @@
         }
 
         /* Hero Section */
-        .mainBg {
-            background: url('/dustbinbg.jpg');
-            height: 500px;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            position: relative;
+        .hero {
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            height: 400px;
             display: flex;
             justify-content: center;
             align-items: center;
             text-align: center;
+            color: white;
+            position: relative;
+            overflow: hidden;
         }
 
-        .mainBg::before {
+        .hero::before {
             content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.7));
+            background: rgba(0, 0, 0, 0.1);
             pointer-events: none;
         }
 
-        .mainDesign {
+        .hero-content {
             z-index: 1;
-            color: white;
+            max-width: 600px;
+            padding: 0 20px;
         }
 
-        .designImg {
-            width: 100px;
+        .hero h2 {
+            font-size: 2.5rem;
             margin-bottom: 1rem;
         }
 
-        .mainText {
-            margin: 0.5rem 0;
+        .hero h3 {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: #ecf0f1;
         }
 
         .mapButton {
@@ -210,16 +212,27 @@
             h3 {
                 font-size: 1.25rem;
             }
+
+            .hero {
+                height: 300px;
+            }
+
+            .hero h2 {
+                font-size: 2rem;
+            }
+
+            .hero h3 {
+                font-size: 1.25rem;
+            }
         }
     </style>
 </head>
 <body>
     <!-- Hero Section -->
-    <div class="mainBg">
-        <div class="mainDesign">
-            <img class="designImg" src="/dustbin.png" alt="Dustbin Icon">
-            <h2 class="mainText">Hello</h2>
-            <h3 class="mainText">Welcome to the Dustbin Portal</h3>
+    <div class="hero">
+        <div class="hero-content">
+            <h2>Hello</h2>
+            <h3>Welcome to the Dustbin Portal</h3>
             <button class="mapButton">Click here to go to Maps</button>
         </div>
     </div>
